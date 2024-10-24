@@ -7,6 +7,7 @@ class Agent():
         self.goal_j = goal_j
         self.frontier = []
         self.searched = []
+        self.path = []
 
 
     def is_goal(self):
@@ -26,6 +27,8 @@ class Agent():
             j = self.j
         # if (i == self.goal_i and j == self.goal_j):
         #     return 0
+            
+        # computing a square root is slow, make a heuristic that doesn't use it?
         return ((self.goal_i - i) ** 2 + (self.goal_j - j) ** 2) ** (1/2)
         
 
@@ -61,10 +64,15 @@ class Agent():
         '''
         if self.is_goal():
             return
-        
+        print(self)
+        print('moving')
+
         moves = self.open_moves(board)
         self.frontier += moves
         self.sort_frontier()
+        
+        if not self.frontier:
+            return
         coord = self.frontier.pop(0)
 
         board[self.i][self.j] = 0

@@ -2,13 +2,13 @@ import pygame
 import random
 from agent import Agent
 import time
-
+from copy import deepcopy
 
 # Initialize pygame
 pygame.init()
 
 # Screen dimensions
-width = height = 1400
+width = height = 800
 rows = cols = 30
 
 screen = pygame.display.set_mode((width, height))
@@ -41,10 +41,9 @@ def generate_board(num_islands, min_island_size, max_island_size):
         i = random.randint(1, cols - 2)
         j = random.randint(1, cols - 2)
         blocks = random.randint(min_island_size, max_island_size)
-        print(blocks)
         board[i][j] = 'block'
+        choice_list = make_choice_list(i, j)
         for _ in range(blocks - 1):
-            choice_list = make_choice_list(i, j)
             choice_i, choice_j = random.choice(choice_list)
 
             choice_in_range = 0 < choice_i < (cols - 1) and 0 < choice_j < (cols - 1)
@@ -121,9 +120,13 @@ def draw_board(board):
     pygame.display.update()
 
 
-board = generate_board(20, 20, 22)
-place_agents(10, board)
+num_agents = 10
+num_blocks = 20
+max_block_size = 10
+board = generate_board(num_blocks, 1, max_block_size)
+place_agents(num_agents, board)
 
+# board_copy = deepcopy(board)
 
 screen.fill(WHITE)
 draw_board(board)
@@ -132,8 +135,10 @@ while True:
     for event in pygame.event.get():
         if event.type == pygame.QUIT:
             pygame.quit()
-        if event.type == 1025 or event.type == 1026:
-            pygame.quit()
+        if event.type == 1025:
+            board = generate_board(num_blocks, 1, max_block_size)
+            agents = []
+            place_agents(num_agents, board)
     for agent in agents:
         agent.move(board)
     time.sleep(0.05)
