@@ -8,10 +8,11 @@ import time
 pygame.init()
 
 # Screen dimensions
-width, height = 700, 700
+width = height = 1400
+rows = cols = 30
+
 screen = pygame.display.set_mode((width, height))
 
-rows, cols = 30, 30
 cell_width = width // cols
 cell_height = height // rows
 
@@ -33,25 +34,31 @@ def generate_board(num_islands, min_island_size, max_island_size):
     intermediate = [0 for i in range(cols)]
     board = [intermediate[:] for i in range(cols)]
 
+    def make_choice_list(i, j):
+        return [(i + 1, j), (i, j + 1), (i - 1, j), (i, j - 1)]
+
     for _ in range(num_islands):
         i = random.randint(1, cols - 2)
         j = random.randint(1, cols - 2)
         blocks = random.randint(min_island_size, max_island_size)
+        print(blocks)
         board[i][j] = 'block'
         for _ in range(blocks - 1):
-            choice_list = [(i + 1, j), (i, j + 1), (i - 1, j), (i, j - 1)]
+            choice_list = make_choice_list(i, j)
             choice_i, choice_j = random.choice(choice_list)
 
             choice_in_range = 0 < choice_i < (cols - 1) and 0 < choice_j < (cols - 1)
             tries = 0
 
-            while tries < 30 and choice_in_range and board[choice_i][choice_j]:
+            while tries < 10 and choice_in_range and board[choice_i][choice_j]:
                 choice_i, choice_j = random.choice(choice_list)
                 choice_in_range = 0 < choice_i < (cols - 1) and 0 < choice_j < (cols - 1)
                 tries += 1
             if choice_in_range:
-                board[choice_i][choice_j] = 'block' 
+                board[choice_i][choice_j] = 'block'
+                choice_list = make_choice_list(choice_i, choice_j)
     return board   
+
 
 def place_agents(num_agents, board):
     '''
@@ -99,27 +106,28 @@ def draw_board(board):
                 pygame.draw.rect(screen, WHITE, rect)
             pygame.draw.rect(screen, BLACK, rect, 1)
     for agent in agents:
-        # draw the agent's starting position
-        center = (agent.j * cell_width + cell_width // 2, agent.i * cell_height + cell_height // 2)
         radius = cell_height // 2 - 5
-        pygame.draw.circle(screen, agent.color, center, radius)
 
         # draw the agent's goal position
         center = (agent.goal_j * cell_width + cell_width // 2, agent.goal_i * cell_height + cell_height // 2)
         pygame.draw.circle(screen, agent.color, center, radius)
         pygame.draw.circle(screen, WHITE, center, radius - 3)
 
+        # draw the agent's starting position
+        center = (agent.j * cell_width + cell_width // 2, agent.i * cell_height + cell_height // 2)
+        pygame.draw.circle(screen, agent.color, center, radius)
+
     # this function call updates the entire state of the pygame window
     pygame.display.update()
 
 
-board = generate_board(10, 10, 12)
-place_agents(4, board)
+board = generate_board(20, 20, 22)
+place_agents(10, board)
 
 
 screen.fill(WHITE)
 draw_board(board)
-
+ 
 while True:
     for event in pygame.event.get():
         if event.type == pygame.QUIT:
@@ -128,7 +136,7 @@ while True:
             pygame.quit()
     for agent in agents:
         agent.move(board)
-    time.sleep(0.1)
+    time.sleep(0.05)
 
 
     screen.fill(WHITE)

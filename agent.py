@@ -6,6 +6,7 @@ class Agent():
         self.goal_i = goal_i
         self.goal_j = goal_j
         self.frontier = []
+        self.searched = []
 
 
     def is_goal(self):
@@ -23,6 +24,8 @@ class Agent():
             i = self.i
         if not j:
             j = self.j
+        # if (i == self.goal_i and j == self.goal_j):
+        #     return 0
         return ((self.goal_i - i) ** 2 + (self.goal_j - j) ** 2) ** (1/2)
         
 
@@ -47,26 +50,27 @@ class Agent():
         for coord in options:
             i, j = coord
             is_valid = 0 <= i < n and 0 <= j < n
-            if is_valid and not board[i][j]:
+            if is_valid and (coord not in self.searched) and (not board[i][j] or board[i][j] == 1):
                 out.append(coord)
         return out
     
 
     def move(self, board):
+        '''
+        Moves the given agent on the board
+        '''
         if self.is_goal():
             return
         
         moves = self.open_moves(board)
         self.frontier += moves
         self.sort_frontier()
-        if ((self.goal_i, self.goal_j) in self.frontier):
-            self.i, self.j = self.goal_i, self.goal_j
-            return
         coord = self.frontier.pop(0)
 
         board[self.i][self.j] = 0
         self.i, self.j = coord
         board[self.i][self.j] = self
+        self.searched.append((self.i, self.j))
 
 
 
