@@ -7,7 +7,7 @@ class Agent():
         self.goal_j = goal_j
         self.frontier = []
         self.searched = []
-        self.path = []
+        self.start_heuristic = 0
 
 
     def is_goal(self):
@@ -25,8 +25,6 @@ class Agent():
             i = self.i
         if not j:
             j = self.j
-        # if (i == self.goal_i and j == self.goal_j):
-        #     return 0
             
         # computing a square root is slow, make a heuristic that doesn't use it?
         return ((self.goal_i - i) ** 2 + (self.goal_j - j) ** 2) ** (1/2)
@@ -53,7 +51,9 @@ class Agent():
         for coord in options:
             i, j = coord
             is_valid = 0 <= i < n and 0 <= j < n
-            if is_valid and (coord not in self.searched) and (not board[i][j] or board[i][j] == 1):
+            check_searhced = coord not in self.searched and coord not in self.frontier
+            check_good_heuristic = self.heuristic(i, j) < self.start_heuristic
+            if is_valid and check_searhced and (not board[i][j] or board[i][j] == 1):
                 out.append(coord)
         return out
     

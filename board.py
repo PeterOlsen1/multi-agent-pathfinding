@@ -126,6 +126,9 @@ max_block_size = 10
 board = generate_board(num_blocks, 1, max_block_size)
 place_agents(num_agents, board)
 
+for agent in agents:
+    agent.start_heuristic = agent.heuristic()
+
 # board_copy = deepcopy(board)
 
 screen.fill(WHITE)
@@ -141,7 +144,7 @@ while True:
             place_agents(num_agents, board)
     for agent in agents:
         agent.move(board)
-    time.sleep(0.05)
+    # time.sleep(0.05)
 
 
     screen.fill(WHITE)
