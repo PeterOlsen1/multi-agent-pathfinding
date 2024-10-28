@@ -28,6 +28,7 @@ class Agent():
             
         # computing a square root is slow, make a heuristic that doesn't use it?
         return ((self.goal_i - i) ** 2 + (self.goal_j - j) ** 2) ** (1/2)
+        # return max(abs(self.goal_i - i), abs(self.goal_j - j))
         
 
     def open_moves(self, board):
