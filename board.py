@@ -1,6 +1,6 @@
 import pygame
 import random
-from agent import Agent
+from agent import Agent, SteepestAscentAgent
 import time
 from copy import deepcopy
 

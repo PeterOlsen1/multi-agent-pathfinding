@@ -65,8 +65,8 @@ class Agent():
         '''
         if self.is_goal():
             return
-        print(self)
-        print('moving')
+        # print(self)
+        # print('moving')
 
         moves = self.open_moves(board)
         self.frontier += moves
@@ -86,10 +86,62 @@ class Agent():
     def sort_frontier(self):
         self.frontier.sort(key=lambda coord: self.heuristic(coord[0], coord[1]) + 1)
 
+
     def __repr__(self):
         return f'Agent at position ({self.i}, {self.j}) color {self.color}'
     
+class SteepestAscentAgent(Agent):
+    def open_moves(self, board):
+        '''
+        Returns a list of open moves for the given board.
 
+        Because of steepest ascent hill climb rules, we only
+        check out moves that are closer to the goal than we are.
+        '''
+        options = [
+            (self.i, self.j),
+            (self.i + 1, self.j),
+            (self.i + 1, self.j + 1),
+            (self.i + 1, self.j - 1),
+            (self.i, self.j + 1),
+            (self.i, self.j - 1),
+            (self.i - 1, self.j + 1),
+            (self.i - 1, self.j),
+            (self.i - 1, self.j - 1),
+        ]
+
+        out = []
+        n = len(board)
+        for coord in options:
+            i, j = coord
+            is_valid = 0 <= i < n and 0 <= j < n
+            check_searhced = coord not in self.searched and coord not in self.frontier
+            check_good_heuristic = self.heuristic(i, j) < self.heuristic()
+            if is_valid and check_searhced and check_good_heuristic and (not board[i][j] or board[i][j] == 1):
+                out.append(coord)
+        return out
+    
+    def move(self, board):
+        '''
+        Moves the given agent on the board.
+
+        This version is adapted to only search spaces near to the agent
+        This uses steepest ascent hill climb local search.
+        '''
+
+        if self.is_goal():
+            return
+
+        self.frontier = self.open_moves(board)
+        
+        if not self.frontier:
+            return
+        coord = self.frontier.pop(0)
+
+        board[self.i][self.j] = 0
+        self.i, self.j = coord
+        board[self.i][self.j] = self
+        self.searched.append((self.i, self.j))
 
 if __name__ == '__main__':
     test = Agent((200, 200, 200), 0, 0, 10, 10)
