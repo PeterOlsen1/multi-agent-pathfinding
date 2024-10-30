@@ -66,7 +66,7 @@ class Board():
         self.board = deepcopy(board) 
 
         
-    def place_agents(self, agent=Agent):
+    def place_agents(self, agent_class=Agent):
         '''
         Create {num_agents} agents and place them on the given board
 
@@ -86,7 +86,7 @@ class Board():
             while self.board[i][j]:
                 goal_i, goal_j = random.randint(0, rows - 1), random.randint(0, cols - 1)
 
-            agent = agent(make_random_color(), i, j, goal_i, goal_j)
+            agent = agent_class(make_random_color(), i, j, goal_i, goal_j)
             self.agents.append(agent)
             self.board[i][j] = agent
             self.board[goal_i][goal_j] = 1
@@ -126,12 +126,12 @@ class Board():
         # this function call updates the entire state of the pygame window
         pygame.display.update()
 
-    def play(self, agent=Agent):
+    def play(self, agent_class=Agent):
         '''
         Creates a loop that initializes the board and plays until done
         '''
         self.generate_board()
-        self.place_agents(agent)
+        self.place_agents(agent_class)
 
         for agent in self.agents:
             agent.start_heuristic = agent.heuristic()
@@ -148,7 +148,7 @@ class Board():
                 if event.type == 1025:
                     self.generate_board()
                     self.agents = []
-                    self.place_agents()
+                    self.place_agents(agent_class)
             for agent in self.agents:
                 agent.move(self.board)
             time.sleep(0.01)

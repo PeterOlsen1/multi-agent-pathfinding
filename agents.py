@@ -157,36 +157,58 @@ class DelayedImprovementAgent(Agent):
         In this new init function, we define 'self.iterations',
         which will increase for every local search iteration where
         we run into a local max.
+
+        The value 'self.iteration' reflects the radius of the surrouding
+        spaces we will search for a move after running into a local max
         '''
         super().__init__(color, i, j, goal_i, goal_j)
-        self.iterations = 0
+        self.iterations = 1
         self.iter_cap = -float('inf')
-        self.current_search = set()
+        self.test = 0
 
 
     def open_moves(self, board):
-        self.current_search = set() #reset this
-        return self.open_moves_helper(board, self.iterations)
+        '''
+        Call the helper function to generate possible moves from our current state.
+
+        Still local search since the current_search set is only used to find
+        nodes that we can search.
+        '''
+        self.current_search = set()
+        moves = self.open_moves_helper(board, self.iterations)
+        return moves
     
-    def open_moves_helper(self, board, iteration):
+    def open_moves_helper(self, board, iteration, i=None, j=None):
         '''
         Helper function so that we can call this recursively.
 
-        We call recursively so that we can generate 
+        We call recursively so that we can generate all moves
+        in some given radius from the current point.
+
+        Default parameters are used with I and J so that
+        if we don't pass in any values, they will default to the
+        current position. However, if we do pass in values, we
+        will calculate new moves from the given position.
         '''
-        if not iteration:
-            return []
+        if iteration <= 0 or (i, j) in self.current_search:
+            return
         else:
+
+            if not i:
+                i = self.i
+            if not j:
+                j = self.j
+
             options = [
-            (self.i, self.j),
-            (self.i + 1, self.j),
-            (self.i + 1, self.j + 1),
-            (self.i + 1, self.j - 1),
-            (self.i, self.j + 1),
-            (self.i, self.j - 1),
-            (self.i - 1, self.j + 1),
-            (self.i - 1, self.j),
-            (self.i - 1, self.j - 1),
+            (i, j),
+            (i + 1, j),
+            (i + 1, j + 1),
+            (i + 1, j - 1),
+            (i, j + 1),
+            (i, j - 1),
+            (i - 1, j + 1),
+            (i - 1, j),
+            (i - 1, j - 1),
         ]
 
         out = []
@@ -194,35 +216,39 @@ class DelayedImprovementAgent(Agent):
         for coord in options:
             i, j = coord
             is_valid = 0 <= i < n and 0 <= j < n
-            check_searhced = coord not in self.searched and coord not in self.frontier
+            check_searhced = coord and coord not in self.frontier and coord not in self.current_search
             check_good_heuristic = self.heuristic(i, j) < self.heuristic()
             if is_valid and (check_searhced and check_good_heuristic and (not board[i][j] or board[i][j] == 1)) or not self.frontier:
                 self.current_search.add((i, j))
                 out.append((i, j))
-                out.append(self.open_moves_helper(board, iteration - 1))
+                res = self.open_moves_helper(board, iteration - 1, i, j) # don't immediatley return bc we need to check if its empty or not
+                if res:
+                    out.append(res)
         return out
     
     
     def move(self, board):
         '''
         Moves the given agent on the board
+
+        This function is updated so that the frontier
+        is only ever the current moves we can do from our position,
+        or our moves within the radius defined by 'self.iterations'.
+
         '''
         if self.is_goal() or self.iterations == self.iter_cap:
             return
-        
-        print(self.iterations)
-        
-        moves = self.open_moves(board)
-        self.frontier += moves
+                
+        self.frontier = self.open_moves(board)
         self.sort_frontier()
         
         if not self.frontier:
             self.iterations += 1
             self.frontier = self.open_moves(board)
-            print(self.iterations)
 
             if not self.frontier:
-                self.iter_cap = self.interations
+                #we've hit the end. keep track so that we just don't move anymore
+                self.iter_cap = self.interations 
                 return
 
         coord = self.frontier.pop(0)

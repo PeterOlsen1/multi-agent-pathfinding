@@ -1,1 +1,13 @@
 * Fix delayed improvement agent
+    - infinite recursion?
+
+
+Augment A* agent to return a shortest path
+    * pop from searched whenever we pop extra from frontier?
+
+
+* implement simmulated annealing
+* implement delayed improvement search
+* implement bidirectional search
+
+* use manhattan distance as opposed to square root to go faster?
