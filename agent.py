@@ -143,6 +143,41 @@ class SteepestAscentAgent(Agent):
         board[self.i][self.j] = self
         self.searched.append((self.i, self.j))
 
+class DelayedImprovementAgent(Agent):
+        def open_moves(self, board):
+            '''
+            Returns a list of open moves for the given board.
+
+            In this case, we need to return open moves within
+            a given radius of the agent's given position.
+            '''
+            options = [
+                (self.i, self.j),
+                (self.i + 1, self.j),
+                (self.i + 1, self.j + 1),
+                (self.i + 1, self.j - 1),
+                (self.i, self.j + 1),
+                (self.i, self.j - 1),
+                (self.i - 1, self.j + 1),
+                (self.i - 1, self.j),
+                (self.i - 1, self.j - 1),
+            ]
+
+            out = []
+            n = len(board)
+            for coord in options:
+                i, j = coord
+                is_valid = 0 <= i < n and 0 <= j < n
+                check_searhced = coord not in self.searched and coord not in self.frontier
+                check_good_heuristic = self.heuristic(i, j) < self.heuristic()
+                if is_valid and check_searhced and check_good_heuristic and (not board[i][j] or board[i][j] == 1):
+                    out.append(coord)
+            return out
+        
+
+class SimulatedAnnealingAgent(Agent):
+    pass
+
 if __name__ == '__main__':
     test = Agent((200, 200, 200), 0, 0, 10, 10)
     print(test.heuristic())

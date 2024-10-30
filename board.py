@@ -152,7 +152,7 @@ class Board():
                     self.place_agents()
             for agent in self.agents:
                 agent.move(self.board)
-            time.sleep(0.05)
+            # time.sleep(0.05)
 
 
             screen.fill(WHITE)
