@@ -1,6 +1,6 @@
 import pygame
 import random
-from agent import Agent, SteepestAscentAgent
+from agents import Agent
 import time
 from copy import deepcopy
 
@@ -66,7 +66,7 @@ class Board():
         self.board = deepcopy(board) 
 
         
-    def place_agents(self):
+    def place_agents(self, agent=Agent):
         '''
         Create {num_agents} agents and place them on the given board
 
@@ -74,7 +74,6 @@ class Board():
             num_agents (int): the number of agents to place on the board
             board ((Agent | int | String) [][]) the given board
         '''
-        print(self.board)
         for _ in range(self.num_agents):
             tries = 0
             i, j = random.randint(0, rows - 1), random.randint(0, cols - 1)
@@ -87,7 +86,7 @@ class Board():
             while self.board[i][j]:
                 goal_i, goal_j = random.randint(0, rows - 1), random.randint(0, cols - 1)
 
-            agent = Agent(make_random_color(), i, j, goal_i, goal_j)
+            agent = agent(make_random_color(), i, j, goal_i, goal_j)
             self.agents.append(agent)
             self.board[i][j] = agent
             self.board[goal_i][goal_j] = 1
@@ -127,12 +126,12 @@ class Board():
         # this function call updates the entire state of the pygame window
         pygame.display.update()
 
-    def play(self):
+    def play(self, agent=Agent):
         '''
         Creates a loop that initializes the board and plays until done
         '''
         self.generate_board()
-        self.place_agents()
+        self.place_agents(agent)
 
         for agent in self.agents:
             agent.start_heuristic = agent.heuristic()
@@ -152,7 +151,7 @@ class Board():
                     self.place_agents()
             for agent in self.agents:
                 agent.move(self.board)
-            # time.sleep(0.05)
+            time.sleep(0.01)
 
 
             screen.fill(WHITE)
