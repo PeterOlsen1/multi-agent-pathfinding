@@ -11,7 +11,7 @@ BLACK = (0, 0, 0)
 GREY = (100, 100, 100)
 
 width = height = 800
-rows = cols = 30
+rows = cols = 7
 cell_width = width // cols
 cell_height = height // rows
 
@@ -48,7 +48,7 @@ class Board():
             i = random.randint(1, cols - 2)
             j = random.randint(1, cols - 2)
             blocks = random.randint(self.min_island_size, self.max_island_size)
-            board[i][j] = 'block'
+            board[i][j] = 2
             choice_list = make_choice_list(i, j)
             for _ in range(blocks - 1):
                 choice_i, choice_j = random.choice(choice_list)
@@ -61,7 +61,7 @@ class Board():
                     choice_in_range = 0 < choice_i < (cols - 1) and 0 < choice_j < (cols - 1)
                     tries += 1
                 if choice_in_range:
-                    board[choice_i][choice_j] = 'block'
+                    board[choice_i][choice_j] = 2
                     choice_list = make_choice_list(choice_i, choice_j)
         self.board = deepcopy(board) 
 
@@ -105,7 +105,7 @@ class Board():
             for col in range(cols):
                 rect = pygame.Rect(col * cell_width, row * cell_height, cell_width, cell_height)
 
-                if (self.board[row][col] ==  'block'):
+                if (self.board[row][col] == 2):
                     pygame.draw.rect(screen, GREY, rect)
 
                 else:
@@ -130,8 +130,8 @@ class Board():
         '''
         Creates a loop that initializes the board and plays until done
         '''
-        self.generate_board()
-        self.place_agents(agent_class)
+        # self.generate_board()
+        # self.place_agents(agent_class)
 
         for agent in self.agents:
             agent.start_heuristic = agent.heuristic()
@@ -141,6 +141,7 @@ class Board():
         screen.fill(WHITE)
         self.draw_board()
         
+        # time.sleep(0.25)
         while True:
             for event in pygame.event.get():
                 if event.type == pygame.QUIT:
@@ -151,7 +152,7 @@ class Board():
                     self.place_agents(agent_class)
             for agent in self.agents:
                 agent.move(self.board)
-            time.sleep(0.01)
+            # time.sleep(0.1)
 
 
             screen.fill(WHITE)

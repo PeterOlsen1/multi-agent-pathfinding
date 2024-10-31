@@ -163,7 +163,7 @@ class DelayedImprovementAgent(Agent):
         '''
         super().__init__(color, i, j, goal_i, goal_j)
         self.iterations = 1
-        self.iter_cap = -float('inf')
+        self.iter_cap = 50
         self.test = 0
 
 
@@ -175,8 +175,16 @@ class DelayedImprovementAgent(Agent):
         nodes that we can search.
         '''
         self.current_search = set()
+        print('iter:', self.iterations)
         moves = self.open_moves_helper(board, self.iterations)
-        return moves
+        out = []
+        print(moves)
+        for move in moves:
+            print(self.heuristic(move[0], move[1]))
+            if self.heuristic(move[0], move[1]) <= self.heuristic():
+                out.append(move)
+        print(out)
+        return out
     
     def open_moves_helper(self, board, iteration, i=None, j=None):
         '''
@@ -190,8 +198,8 @@ class DelayedImprovementAgent(Agent):
         current position. However, if we do pass in values, we
         will calculate new moves from the given position.
         '''
-        if iteration <= 0 or (i, j) in self.current_search:
-            return
+        if iteration <= 0:
+            return []
         else:
 
             if not i:
@@ -213,17 +221,19 @@ class DelayedImprovementAgent(Agent):
 
         out = []
         n = len(board)
+        print('Set len:', len(self.current_search))
         for coord in options:
+            if not coord:
+                pass
             i, j = coord
             is_valid = 0 <= i < n and 0 <= j < n
-            check_searhced = coord and coord not in self.frontier and coord not in self.current_search
-            check_good_heuristic = self.heuristic(i, j) < self.heuristic()
-            if is_valid and (check_searhced and check_good_heuristic and (not board[i][j] or board[i][j] == 1)) or not self.frontier:
+            check_searhced = coord not in self.current_search
+            if is_valid and (check_searhced and (not board[i][j] or board[i][j] == 1)):
                 self.current_search.add((i, j))
                 out.append((i, j))
                 res = self.open_moves_helper(board, iteration - 1, i, j) # don't immediatley return bc we need to check if its empty or not
                 if res:
-                    out.append(res)
+                    out += res
         return out
     
     
@@ -237,18 +247,21 @@ class DelayedImprovementAgent(Agent):
 
         '''
         if self.is_goal() or self.iterations == self.iter_cap:
+            print(self.heuristic(0, 3))
             return
                 
         self.frontier = self.open_moves(board)
         self.sort_frontier()
-        
+
         if not self.frontier:
             self.iterations += 1
             self.frontier = self.open_moves(board)
 
+            # frontier is still empty. return so that we can move again
             if not self.frontier:
+                return
                 #we've hit the end. keep track so that we just don't move anymore
-                self.iter_cap = self.interations 
+                self.iter_cap = self.iterations
                 return
 
         coord = self.frontier.pop(0)
