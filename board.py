@@ -11,7 +11,7 @@ BLACK = (0, 0, 0)
 GREY = (100, 100, 100)
 
 width = height = 800
-rows = cols = 7
+rows = cols = 30
 cell_width = width // cols
 cell_height = height // rows
 

@@ -21,9 +21,9 @@ class Agent():
         '''
         Give the straightline distance between current position and goal, ignoring obstacles
         '''
-        if not i:
+        if i == None:
             i = self.i
-        if not j:
+        if j == None:
             j = self.j
             
         # computing a square root is slow, make a heuristic that doesn't use it?
@@ -163,7 +163,7 @@ class DelayedImprovementAgent(Agent):
         '''
         super().__init__(color, i, j, goal_i, goal_j)
         self.iterations = 1
-        self.iter_cap = 50
+        self.iter_cap = 100
         self.test = 0
 
 
@@ -180,10 +180,8 @@ class DelayedImprovementAgent(Agent):
         out = []
         print(moves)
         for move in moves:
-            print(self.heuristic(move[0], move[1]))
-            if self.heuristic(move[0], move[1]) <= self.heuristic():
+            if self.heuristic(move[0], move[1]) < self.heuristic():
                 out.append(move)
-        print(out)
         return out
     
     def open_moves_helper(self, board, iteration, i=None, j=None):
@@ -202,9 +200,9 @@ class DelayedImprovementAgent(Agent):
             return []
         else:
 
-            if not i:
+            if i == None:
                 i = self.i
-            if not j:
+            if j == None:
                 j = self.j
 
             options = [
@@ -247,7 +245,6 @@ class DelayedImprovementAgent(Agent):
 
         '''
         if self.is_goal() or self.iterations == self.iter_cap:
-            print(self.heuristic(0, 3))
             return
                 
         self.frontier = self.open_moves(board)
@@ -275,6 +272,9 @@ class DelayedImprovementAgent(Agent):
         
 
 class SimulatedAnnealingAgent(Agent):
+    pass
+
+class BidirectionalSearchAgent(Agent):
     pass
 
 if __name__ == '__main__':
