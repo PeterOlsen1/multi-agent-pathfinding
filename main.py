@@ -16,11 +16,14 @@ from agents import *
 # ]
 
 
-def main(agent=Agent):
-    b = Board()
-    b.generate_board()
-    b.place_agents(agent)
-    b.play(agent)
+# def main(agent=Agent):
+#     b = Board()
+#     b.generate_board()
+#     b.place_agents(agent)
+#     b.play(agent)
 
-main(BidirectionalSearchAgent)
+# main(BidirectionalSearchAgent)
 # main()
+
+b = Board()
+b.test(10, Agent, BidirectionalSearchAgent, SimulatedAnnealingAgent)

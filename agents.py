@@ -12,6 +12,8 @@ class Agent():
         self.searched = set() # use a set here for faster lookup
         self.start_heuristic = 0
 
+    def name(self):
+        return 'AStarAgent'
 
     def is_goal(self):
         '''
@@ -96,6 +98,9 @@ class Agent():
 
     
 class SteepestAscentAgent(Agent):
+    def name(self):
+        return 'SteepestAscentAgent'
+    
     def open_moves(self, board):
         '''
         Returns a list of open moves for the given board.
@@ -167,6 +172,8 @@ class DelayedImprovementAgent(Agent):
         self.iterations = 2
         self.iter_cap = 100
 
+    def name(self):
+        return 'DelayedImprovementAgent'
 
     def open_moves(self, board):
         '''
@@ -280,6 +287,9 @@ class SimulatedAnnealingAgent(Agent):
         self.iterations = 1
         self.temp = 1000
 
+    def name(self):
+        return 'SimulatedAnnealingAgent'
+
     def open_moves(self, board):
         '''
         Returns a list of open moves for the given board.
@@ -379,6 +389,9 @@ class BidirectionalSearchAgent(Agent):
         super().__init__(color, i, j, goal_i, goal_j)
         self.goal_frontier = []
         self.goal_searched = set()
+    
+    def name(self):
+        return 'BidirectionalSearchAgent'
         
     def open_moves(self, board, i=None, j=None, goal=False):
         '''
@@ -415,10 +428,10 @@ class BidirectionalSearchAgent(Agent):
                 check_searhced = coord not in self.goal_searched and coord not in self.goal_frontier
 
             if board[i][j] == 1 or isinstance(board[i][j], Agent):
-                self.frontier = []
-                self.goal_frontier = []
-                    
-                return [coord]
+                self.frontier = [(i, j)]
+                self.goal_frontier = [(i, j)]
+                return []
+                # return [coord]
             
             if check_searhced and (not board[i][j] or board[i][j] == 1):
                 out.append(coord)
