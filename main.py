@@ -1,10 +1,6 @@
 from board import Board
-from agents import DelayedImprovementAgent, Agent
+from agents import *
 
-b = Board()
-b.generate_board()
-b.place_agents(Agent)
-# b.play()
 
 # Testing board
 # agent = DelayedImprovementAgent((255, 0, 0), 2, 3, 0, 3)
@@ -19,5 +15,12 @@ b.place_agents(Agent)
 #     [0, 0, 0, 0, 0, 0, 0]
 # ]
 
-b.play(Agent)
-# b.play()
+
+def main(agent=Agent):
+    b = Board()
+    b.generate_board()
+    b.place_agents(agent)
+    b.play(agent)
+
+main(BidirectionalSearchAgent)
+# main()

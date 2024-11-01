@@ -130,13 +130,9 @@ class Board():
         '''
         Creates a loop that initializes the board and plays until done
         '''
-        # self.generate_board()
-        # self.place_agents(agent_class)
 
         for agent in self.agents:
             agent.start_heuristic = agent.heuristic()
-
-        # board_copy = deepcopy(board)
 
         screen.fill(WHITE)
         self.draw_board()
