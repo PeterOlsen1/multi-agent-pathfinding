@@ -2,6 +2,12 @@ import random
 import math
 
 class Agent():
+    '''
+    Default class for an agent.
+
+    open_moves() and move() are not defined,
+    that is left to the child classes.
+    '''
     def __init__(self, color, i, j, goal_i, goal_j):
         self.color = color
         self.i = i
@@ -11,9 +17,13 @@ class Agent():
         self.frontier = []
         self.searched = set() # use a set here for faster lookup
         self.start_heuristic = 0
+        self.no_solution = False
 
     def name(self):
-        return 'AStarAgent'
+        '''
+        Use this name function for hashing
+        '''
+        return 'Agent'
 
     def is_goal(self):
         '''
@@ -21,7 +31,6 @@ class Agent():
         '''
         return self.i == self.goal_i and self.j == self.goal_j
     
-
     def heuristic(self, i=None, j=None):
         '''
         Give the straightline distance between current position and goal, ignoring obstacles
@@ -35,7 +44,26 @@ class Agent():
         return ((self.goal_i - i) ** 2 + (self.goal_j - j) ** 2) ** (1/2)
         # return max(abs(self.goal_i - i), abs(self.goal_j - j))
         
+    def open_moves(self, board):
+        pass
+    
+    def move(self, board):
+        pass
 
+    def sort_frontier(self):
+        self.frontier.sort(key=lambda coord: self.heuristic(coord[0], coord[1]) + 1)
+
+    def __repr__(self):
+        return f'Agent at position ({self.i}, {self.j}) color {self.color}'
+    
+
+class AStarAgent(Agent):
+    def name(self):
+        '''
+        Use this name function for hashing
+        '''
+        return 'AStarAgent'
+        
     def open_moves(self, board):
         '''
         Returns a list of open moves for the given board
@@ -75,6 +103,7 @@ class Agent():
         self.sort_frontier()
         
         if not self.frontier:
+            self.no_solution = True
             return
         coord = self.frontier.pop(0)
 
@@ -82,18 +111,6 @@ class Agent():
         self.i, self.j = coord
         board[self.i][self.j] = self
         self.searched.add((self.i, self.j))
-
-
-
-    def sort_frontier(self):
-        self.frontier.sort(key=lambda coord: self.heuristic(coord[0], coord[1]) + 1)
-
-
-    def __repr__(self):
-        return f'Agent at position ({self.i}, {self.j}) color {self.color}'
-    
-
-
 
 
     
@@ -145,6 +162,7 @@ class SteepestAscentAgent(Agent):
         self.frontier = self.open_moves(board)
         
         if not self.frontier:
+            self.no_solution = True
             return
         coord = self.frontier.pop(0)
 
@@ -250,6 +268,8 @@ class DelayedImprovementAgent(Agent):
 
         '''
         if self.is_goal() or self.iterations == self.iter_cap:
+            # if we're at the cap, there is no solution
+            self.no_solution = (self.iterations == self.iter_cap)
             return
                 
         self.frontier = self.open_moves(board)
@@ -286,6 +306,7 @@ class SimulatedAnnealingAgent(Agent):
         super().__init__(color, i, j, goal_i, goal_j)
         self.iterations = 1
         self.temp = 1000
+        self.repeats = 0
 
     def name(self):
         return 'SimulatedAnnealingAgent'
@@ -329,13 +350,14 @@ class SimulatedAnnealingAgent(Agent):
         self.frontier = self.open_moves(board)
         self.sort_frontier()
         
-        if not self.frontier:
+        if not self.frontier or self.repeats > 10:
+            self.no_solution = True
             return
         
         # we've hit a high level of iterations but no solutuion.
         # reset to bring back randomness
         if self.iterations > 1000:
-            print('bring back randomness')
+            self.repeats += 1
             self.iterations = 1
 
         T = self.temp / self.iterations
@@ -457,6 +479,7 @@ class BidirectionalSearchAgent(Agent):
         self.sort_goal_frontier()
         
         if not self.frontier or not self.goal_frontier:
+            self.no_solution = True
             return
         
         coord = self.frontier.pop(0)

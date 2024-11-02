@@ -26,4 +26,4 @@ from agents import *
 # main()
 
 b = Board()
-b.test(10, Agent, BidirectionalSearchAgent, SimulatedAnnealingAgent)
+print(b.test(100, AStarAgent, BidirectionalSearchAgent, SimulatedAnnealingAgent))

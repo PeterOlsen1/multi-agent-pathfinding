@@ -1,6 +1,6 @@
 import pygame
 import random
-from agents import Agent
+from agents import AStarAgent
 import time
 from copy import deepcopy
 
@@ -14,9 +14,6 @@ width = height = 800
 rows = cols = 30
 cell_width = width // cols
 cell_height = height // rows
-
-pygame.init()
-screen = pygame.display.set_mode((width, height))
 
 def make_random_color():
     return (random.randint(0, 255), random.randint(0, 255), random.randint(0, 255))
@@ -82,7 +79,7 @@ class Board():
 
         return [(i, j), (goal_i, goal_j)]
     
-    def place_agents(self, agent_class=Agent):
+    def place_agents(self, agent_class=AStarAgent):
         '''
         Create {num_agents} agents and place them on the given board
 
@@ -124,7 +121,7 @@ class Board():
                 if self.board[i][j] != 2:
                     self.board[i][j] = 0
 
-    def draw_board(self):
+    def draw_board(self, screen):
         '''
         Draws the game board on the screen.
 
@@ -159,16 +156,18 @@ class Board():
         pygame.display.update()
 
 
-    def play(self, agent_class=Agent):
+    def play(self, agent_class=AStarAgent):
         '''
         Creates a loop that initializes the board and plays until done
         '''
+        pygame.init()
+        screen = pygame.display.set_mode((width, height))
 
         for agent in self.agents:
             agent.start_heuristic = agent.heuristic()
 
         screen.fill(WHITE)
-        self.draw_board()
+        self.draw_board(screen)
         
         # time.sleep(0.25)
         while True:
@@ -185,9 +184,9 @@ class Board():
 
 
             screen.fill(WHITE)
-            self.draw_board()
+            self.draw_board(screen)
         
-    def test(self, iterations=10, *agent_classes):
+    def test(self, iterations=10, agent_classes=[]):
         '''
         Method for testing different agent classes against each other.
 
@@ -210,12 +209,18 @@ class Board():
                 agent.start_heuristic = agent.heuristic()
 
                 start = time.time_ns()
-                while not agent.is_goal():
+
+                # run the agent until we either find the goal or no solution
+                while not agent.is_goal() and not agent.no_solution:
                     agent.move(self.board)
                 end = time.time_ns()
-                delta = (end - start) / 1000000000
-                out[agent.name()].append(delta)
-                print(f'finished in {delta} seconds!')
+
+                if agent.no_solution:
+                    out[agent.name()].append(-1)
+                else:
+                    delta = (end - start) / 1000000000
+                    out[agent.name()].append(delta)
+                    print(f'finished in {delta} seconds!')
         return out
         
 if __name__ == '__main__':
