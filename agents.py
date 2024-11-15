@@ -476,7 +476,7 @@ class SimulatedAnnealingAgent(Agent):
             self.no_solution = True
             return
         
-        # we've hit a high level of iterations but no solutuion.
+        # we've hit a high level of iterations but no solution.
         # reset to bring back randomness
         if self.iterations > 1000:
             self.repeats += 1
