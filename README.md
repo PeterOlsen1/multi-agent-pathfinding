@@ -1,0 +1,1 @@
+The purpose of this project is to compare different pathfinding algorithms, and see if I can possibly improve upon them.
