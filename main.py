@@ -17,7 +17,8 @@ from agents import *
 
 
 def main(agent=Agent):
-    b = Board()
+    # b = Board()
+    b = Board(rows=80, cols=80, num_islands=100, min_island_size=10, max_island_size=30)
     b.generate_board()
     b.place_agents(agent)
     b.play(agent)
@@ -26,7 +27,7 @@ def main(agent=Agent):
 # main()
 # main(GuidedLocalSearchAgent)
 # main(DelayedImprovementAgent)
-main(SimulatedAnnealingAgent)
+main(AStarAgent)
 
 # b = Board()
 # print(b.test(100, AStarAgent, BidirectionalSearchAgent, SimulatedAnnealingAgent))

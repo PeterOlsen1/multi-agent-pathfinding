@@ -10,8 +10,8 @@ WHITE = (255, 255, 255)
 BLACK = (0, 0, 0)
 GREY = (100, 100, 100)
 
-width = height = 800
-rows = cols = 30
+width = height = 1200
+rows = cols = 80
 cell_width = width // cols
 cell_height = height // rows
 
@@ -143,14 +143,21 @@ class Board():
         for agent in self.agents:
             radius = cell_height // 2 - 5
 
-            # draw the agent's goal position
-            center = (agent.goal_j * cell_width + cell_width // 2, agent.goal_i * cell_height + cell_height // 2)
-            pygame.draw.circle(screen, agent.color, center, radius)
-            pygame.draw.circle(screen, WHITE, center, radius - 3)
+            if (rows <= 30):
+                # draw the agent's goal position
+                center = (agent.goal_j * cell_width + cell_width // 2, agent.goal_i * cell_height + cell_height // 2)
+                pygame.draw.circle(screen, agent.color, center, radius)
+                pygame.draw.circle(screen, WHITE, center, radius - 3)
 
-            # draw the agent's starting position
-            center = (agent.j * cell_width + cell_width // 2, agent.i * cell_height + cell_height // 2)
-            pygame.draw.circle(screen, agent.color, center, radius)
+                # draw the agent's starting position
+                center = (agent.j * cell_width + cell_width // 2, agent.i * cell_height + cell_height // 2)
+                pygame.draw.circle(screen, agent.color, center, radius)
+            else:
+                goal_rect = pygame.Rect(agent.goal_j * cell_width, agent.goal_i * cell_height, cell_width, cell_height)
+                pygame.draw.rect(screen, (255, 0, 0), goal_rect)
+
+                agent_rect = pygame.Rect(agent.j * cell_width, agent.i * cell_height, cell_width, cell_height)
+                pygame.draw.rect(screen, (255, 0, 0), agent_rect)
 
         # this function call updates the entire state of the pygame window
         pygame.display.update()
@@ -180,6 +187,7 @@ class Board():
                     self.place_agents(agent_class)
             for agent in self.agents:
                 agent.move(self.board)
+
             # time.sleep(0.1)
 
 
@@ -194,8 +202,8 @@ class Board():
         '''
         out = {}
         for agent in agent_classes:
-            print(agent)
-            out[agent.name(self)] = []
+            out[agent.__name__] = []
+            out[agent.__name__ + '_heuristic_calls'] = []
         
         for i in range(iterations):
             self.generate_board()
@@ -221,6 +229,8 @@ class Board():
                     delta = (end - start) / 1000000000
                     out[agent.name()].append(delta)
                     # print(f'finished in {delta} seconds!')
+
+                out[agent.name() + '_heuristic_calls'].append(agent.heuristic_calls)
         return out
         
 if __name__ == '__main__':

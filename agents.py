@@ -18,6 +18,7 @@ class Agent():
         self.searched = set() # use a set here for faster lookup
         self.start_heuristic = 0
         self.no_solution = False
+        self.heuristic_calls = 0
 
     def name(self):
         '''
@@ -39,7 +40,7 @@ class Agent():
             i = self.i
         if j == None:
             j = self.j
-            
+        self.heuristic_calls += 1
         # computing a square root is slow, make a heuristic that doesn't use it?
         return ((self.goal_i - i) ** 2 + (self.goal_j - j) ** 2) ** (1/2)
         # return max(abs(self.goal_i - i), abs(self.goal_j - j))
@@ -231,7 +232,8 @@ class BidirectionalSearchAgent(Agent):
             i = self.i
         if j == None:
             j = self.j
-            
+
+        self.heuristic_calls += 1        
         return ((self.i - i) ** 2 + (self.j - j) ** 2) ** (1/2)
 
 
@@ -517,7 +519,6 @@ class GuidedLocalSearchAgent(Agent):
     def __init__(self, color, i, j, goal_i, goal_j):
         super().__init__(color, i, j, goal_i, goal_j)
         self.penalties = {}
-        self.no_solution = False
 
     def name(self):
         return 'GuidedLocalSearchAgent'
@@ -564,9 +565,6 @@ class GuidedLocalSearchAgent(Agent):
     def move(self, board):
         '''
         Moves the given agent on the board.
-
-        This version is adapted to only search spaces near to the agent
-        This uses steepest ascent hill climb local search.
         '''
 
         if self.is_goal() or self.no_solution:
@@ -574,6 +572,10 @@ class GuidedLocalSearchAgent(Agent):
 
         self.frontier = self.open_moves(board)
         self.sort_frontier()
+        
+        if not self.frontier:
+            self.no_solution = True
+            return
         
         coord = self.frontier.pop(0)
 
