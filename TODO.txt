@@ -1,1 +1,6 @@
 * Start improvement process
+    * Bidirectional local search?
+
+* Produce shaded regions in graphs that have means
+    * use the fill_between function
+    * visualize with seaborn for better looks?

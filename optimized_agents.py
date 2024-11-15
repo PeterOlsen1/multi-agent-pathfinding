@@ -77,3 +77,5 @@ class MemoryLookupLocalSearchAgent(Agent):
         self.i, self.j = coord
         board[self.i][self.j] = self
 
+
+# bidirectional local search?

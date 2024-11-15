@@ -170,7 +170,7 @@ if __name__ == '__main__':
     agents = [GuidedLocalSearchAgent, MemoryLookupLocalSearchAgent]
 
     iterations = 50
-    data = b3.test(iterations, agents)
+    data = b2.test(iterations, agents)
 
 
     averagePerformanceBarChart(agents, iterations, b2, 'average_performance.png', data)
