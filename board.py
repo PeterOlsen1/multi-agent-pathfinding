@@ -127,7 +127,7 @@ class Board():
 
         The default square is an open white box,
         the default block is a grey block,
-        and agens are rendered in two parts:
+        and agents are rendered in two parts:
             Agent is a circle, and goal is a ring
         '''
         for row in range(self.rows):
