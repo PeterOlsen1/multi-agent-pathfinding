@@ -220,7 +220,7 @@ class Board():
                 else:
                     delta = (end - start) / 1000000000
                     out[agent.name()].append(delta)
-                    print(f'finished in {delta} seconds!')
+                    # print(f'finished in {delta} seconds!')
         return out
         
 if __name__ == '__main__':
