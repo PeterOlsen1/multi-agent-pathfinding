@@ -1,5 +1,6 @@
 from board import Board
 from agents import *
+from optimized_agents import *
 from matplotlib import pyplot as plt
 
 def performanceLinechart(agents, iterations, board, fname, data=None):
@@ -164,11 +165,15 @@ def problemsSolvedBarChart(agents, iterations, board, fname, data=None):
 if __name__ == '__main__':
     b = Board()
     b2 = Board(rows=100, cols=100, num_islands=200, min_island_size=10, max_island_size=30)
-    agents = [AStarAgent, BidirectionalSearchAgent, GuidedLocalSearchAgent, SteepestAscentAgent]
-    data = b.test(100, agents)
+    b3 = Board(rows=1000, cols=1000, num_islands=2000, min_island_size=10, max_island_size=30)
+    # agents = [AStarAgent, BidirectionalSearchAgent, GuidedLocalSearchAgent, SteepestAscentAgent]
+    agents = [GuidedLocalSearchAgent, MemoryLookupLocalSearchAgent]
+
+    iterations = 50
+    data = b3.test(iterations, agents)
 
 
-    # averagePerformanceBarChart(agents, 100, b2, 'average_performance.png', data)
-    # performanceLinechart(agents, 100, b2, 'performance.png', data)
-    # fastestSolutionBarChart(agents, 100, b2, 'fastest.png', data)
-    problemsSolvedBarChart(agents, 100, b2, 'problems_solved.png', data)
+    averagePerformanceBarChart(agents, iterations, b2, 'average_performance.png', data)
+    performanceLinechart(agents, iterations, b2, 'performance.png', data)
+    fastestSolutionBarChart(agents, iterations, b2, 'fastest.png', data)
+    # problemsSolvedBarChart(agents, iterations, b2, 'problems_solved.png', data)

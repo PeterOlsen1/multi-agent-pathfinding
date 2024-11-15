@@ -1,5 +1,6 @@
 from board import Board
 from agents import *
+from optimized_agents import MemoryLookupLocalSearchAgent
 
 
 # Testing board
@@ -27,7 +28,7 @@ def main(agent=Agent):
 # main()
 # main(GuidedLocalSearchAgent)
 # main(DelayedImprovementAgent)
-main(AStarAgent)
+main(MemoryLookupLocalSearchAgent)
 
 # b = Board()
 # print(b.test(100, AStarAgent, BidirectionalSearchAgent, SimulatedAnnealingAgent))
