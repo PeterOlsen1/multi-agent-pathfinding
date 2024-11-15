@@ -2,6 +2,12 @@ import random
 import math
 
 class Agent():
+    '''
+    Default class for an agent.
+
+    open_moves() and move() are not defined,
+    that is left to the child classes.
+    '''
     def __init__(self, color, i, j, goal_i, goal_j):
         self.color = color
         self.i = i
@@ -11,9 +17,14 @@ class Agent():
         self.frontier = []
         self.searched = set() # use a set here for faster lookup
         self.start_heuristic = 0
+        self.no_solution = False
+        self.heuristic_calls = 0
 
     def name(self):
-        return 'AStarAgent'
+        '''
+        Use this name function for hashing
+        '''
+        return 'Agent'
 
     def is_goal(self):
         '''
@@ -21,7 +32,6 @@ class Agent():
         '''
         return self.i == self.goal_i and self.j == self.goal_j
     
-
     def heuristic(self, i=None, j=None):
         '''
         Give the straightline distance between current position and goal, ignoring obstacles
@@ -30,12 +40,31 @@ class Agent():
             i = self.i
         if j == None:
             j = self.j
-            
+        self.heuristic_calls += 1
         # computing a square root is slow, make a heuristic that doesn't use it?
         return ((self.goal_i - i) ** 2 + (self.goal_j - j) ** 2) ** (1/2)
         # return max(abs(self.goal_i - i), abs(self.goal_j - j))
         
+    def open_moves(self, board):
+        pass
+    
+    def move(self, board):
+        pass
 
+    def sort_frontier(self):
+        self.frontier.sort(key=lambda coord: self.heuristic(coord[0], coord[1]) + 1)
+
+    def __repr__(self):
+        return f'Agent at position ({self.i}, {self.j}) color {self.color}'
+    
+
+class AStarAgent(Agent):
+    def name(self):
+        '''
+        Use this name function for hashing
+        '''
+        return 'AStarAgent'
+        
     def open_moves(self, board):
         '''
         Returns a list of open moves for the given board
@@ -75,6 +104,7 @@ class Agent():
         self.sort_frontier()
         
         if not self.frontier:
+            self.no_solution = True
             return
         coord = self.frontier.pop(0)
 
@@ -84,18 +114,133 @@ class Agent():
         self.searched.add((self.i, self.j))
 
 
+class BidirectionalSearchAgent(Agent):
+    '''
+    This search agent is a little different. 
 
-    def sort_frontier(self):
-        self.frontier.sort(key=lambda coord: self.heuristic(coord[0], coord[1]) + 1)
+    We will employ A* but from both ways. This way 
+    we can search towards each other instead of one direction
+    at a time.
+    '''    
+    def __init__(self, color, i, j, goal_i, goal_j):
+        '''
+        In this new init function, we define 'self.iterations',
+        which will increase for every local search iteration where
+        we run into a local max.
 
+        The value 'self.iterations' reflects the radius of the surrouding
+        spaces we will search for a move after running into a local max
+        '''
+        super().__init__(color, i, j, goal_i, goal_j)
+        self.goal_frontier = []
+        self.goal_searched = set()
+    
+    def name(self):
+        return 'BidirectionalSearchAgent'
+        
+    def open_moves(self, board, i=None, j=None, goal=False):
+        '''
+        Returns a list of open moves for the given board
+        '''
+        if i == None:
+            i = self.i
+        if j == None:
+            j = self.j
 
-    def __repr__(self):
-        return f'Agent at position ({self.i}, {self.j}) color {self.color}'
+        options = [
+            (i + 1, j),
+            (i + 1, j + 1),
+            (i + 1, j - 1),
+            (i, j + 1),
+            (i, j - 1),
+            (i - 1, j + 1),
+            (i - 1, j),
+            (i - 1, j - 1),
+        ]
+
+        out = []
+        n = len(board)
+        for coord in options:
+            i, j = coord
+
+            is_valid = 0 <= i and i < n and 0 <= j and j < n
+            if not is_valid:
+                continue
+
+            check_searhced = coord not in self.searched and coord not in self.frontier
+
+            if goal:
+                check_searhced = coord not in self.goal_searched and coord not in self.goal_frontier
+
+            if board[i][j] == 1 or isinstance(board[i][j], Agent):
+                self.frontier = [(i, j)]
+                self.goal_frontier = [(i, j)]
+                return []
+                # return [coord]
+            
+            if check_searhced and (not board[i][j] or board[i][j] == 1):
+                out.append(coord)
+        return out
     
 
+    def move(self, board):
+        '''
+        Moves the given agent on the board.
+
+        This version will also move the goal state,
+        since we are searching bidirectionally.
+        '''
+        if self.is_goal():
+            return
+        
+        moves = self.open_moves(board)
+        self.frontier += moves
+        self.sort_frontier()
+
+        moves = self.open_moves(board, self.goal_i, self.goal_j, True)
+        self.goal_frontier += moves
+        self.sort_goal_frontier()
+        
+        if not self.frontier or not self.goal_frontier:
+            self.no_solution = True
+            return
+        
+        coord = self.frontier.pop(0)
+        goal_coord = self.goal_frontier.pop(0)
+
+        board[self.i][self.j] = 0
+        self.i, self.j = coord
+        board[self.i][self.j] = self
+
+        board[self.goal_i][self.goal_j] = 0
+        self.goal_i, self.goal_j = goal_coord
+        board[self.goal_i][self.goal_j] = self
+
+        self.searched.add((self.i, self.j))
+        self.goal_searched.add((self.goal_i, self.goal_j))
 
 
+    def sort_goal_frontier(self):
+        self.goal_frontier.sort(key=lambda coord: self.goal_heuristic(coord[0], coord[1]) + 1)
 
+    def goal_heuristic(self, i=None, j=None):
+        '''
+        Redefine a new heuristic that calculates distance to the
+        agent's current position.
+        '''
+        if i == None:
+            i = self.i
+        if j == None:
+            j = self.j
+
+        self.heuristic_calls += 1        
+        return ((self.i - i) ** 2 + (self.j - j) ** 2) ** (1/2)
+
+
+''' =================================== LOCAL SEARCH AGENTS =================================== 
+    Agents defined below are local search agents. They do not keep track of old searches, and only
+    search for the best move from the current state.
+'''
     
 class SteepestAscentAgent(Agent):
     def name(self):
@@ -145,6 +290,7 @@ class SteepestAscentAgent(Agent):
         self.frontier = self.open_moves(board)
         
         if not self.frontier:
+            self.no_solution = True
             return
         coord = self.frontier.pop(0)
 
@@ -152,9 +298,6 @@ class SteepestAscentAgent(Agent):
         self.i, self.j = coord
         board[self.i][self.j] = self
         self.searched.add((self.i, self.j))
-
-
-
 
 
 
@@ -250,6 +393,8 @@ class DelayedImprovementAgent(Agent):
 
         '''
         if self.is_goal() or self.iterations == self.iter_cap:
+            # if we're at the cap, there is no solution
+            self.no_solution = (self.iterations == self.iter_cap)
             return
                 
         self.frontier = self.open_moves(board)
@@ -271,7 +416,6 @@ class DelayedImprovementAgent(Agent):
         self.searched.add((self.i, self.j))
     
 
-        
 
 class SimulatedAnnealingAgent(Agent):
     def __init__(self, color, i, j, goal_i, goal_j):
@@ -280,12 +424,13 @@ class SimulatedAnnealingAgent(Agent):
         which will increase for every local search iteration where
         we run into a local max.
 
-        The value 'self.iterations' reflects the radius of the surrouding
+        The value 'self.iterations' reflects the radius of the surrounding
         spaces we will search for a move after running into a local max
         '''
         super().__init__(color, i, j, goal_i, goal_j)
         self.iterations = 1
         self.temp = 1000
+        self.repeats = 0
 
     def name(self):
         return 'SimulatedAnnealingAgent'
@@ -329,13 +474,14 @@ class SimulatedAnnealingAgent(Agent):
         self.frontier = self.open_moves(board)
         self.sort_frontier()
         
-        if not self.frontier:
+        if not self.frontier or self.repeats > 10:
+            self.no_solution = True
             return
         
-        # we've hit a high level of iterations but no solutuion.
+        # we've hit a high level of iterations but no solution.
         # reset to bring back randomness
         if self.iterations > 1000:
-            print('bring back randomness')
+            self.repeats += 1
             self.iterations = 1
 
         T = self.temp / self.iterations
@@ -369,127 +515,78 @@ class SimulatedAnnealingAgent(Agent):
         self.frontier.pop(idx_to_pop)
 
 
-class BidirectionalSearchAgent(Agent):
-    '''
-    This search agent is a little different. 
-
-    We will employ A* but from both ways. This way 
-    we can search towards each other instead of one direction
-    at a time.
-    '''    
+class GuidedLocalSearchAgent(Agent):
     def __init__(self, color, i, j, goal_i, goal_j):
-        '''
-        In this new init function, we define 'self.iterations',
-        which will increase for every local search iteration where
-        we run into a local max.
-
-        The value 'self.iterations' reflects the radius of the surrouding
-        spaces we will search for a move after running into a local max
-        '''
         super().__init__(color, i, j, goal_i, goal_j)
-        self.goal_frontier = []
-        self.goal_searched = set()
-    
+        self.penalties = {}
+
     def name(self):
-        return 'BidirectionalSearchAgent'
-        
-    def open_moves(self, board, i=None, j=None, goal=False):
-        '''
-        Returns a list of open moves for the given board
-        '''
+        return 'GuidedLocalSearchAgent'
+    
+    def heuristic(self, i=None, j=None):
         if i == None:
             i = self.i
         if j == None:
             j = self.j
 
+        # grab heuristic so we only need to calculate it once
+        heuristic_val = super().heuristic(i, j)
+        straight_line = heuristic_val
+        penalty = self.penalties.get((i, j), 0)
+
+        # we've visited the same square 100 times. time to stop
+        if (penalty > 100):
+            self.no_solution = True
+            return -1
+        return straight_line + penalty * heuristic_val
+    
+    def open_moves(self, board):
         options = [
-            (i + 1, j),
-            (i + 1, j + 1),
-            (i + 1, j - 1),
-            (i, j + 1),
-            (i, j - 1),
-            (i - 1, j + 1),
-            (i - 1, j),
-            (i - 1, j - 1),
+            (self.i, self.j),
+            (self.i + 1, self.j),
+            (self.i + 1, self.j + 1),
+            (self.i + 1, self.j - 1),
+            (self.i, self.j + 1),
+            (self.i, self.j - 1),
+            (self.i - 1, self.j + 1),
+            (self.i - 1, self.j),
+            (self.i - 1, self.j - 1),
         ]
 
         out = []
         n = len(board)
         for coord in options:
             i, j = coord
-
-            is_valid = 0 <= i and i < n and 0 <= j and j < n
-            if not is_valid:
-                continue
-
-            check_searhced = coord not in self.searched and coord not in self.frontier
-
-            if goal:
-                check_searhced = coord not in self.goal_searched and coord not in self.goal_frontier
-
-            if board[i][j] == 1 or isinstance(board[i][j], Agent):
-                self.frontier = [(i, j)]
-                self.goal_frontier = [(i, j)]
-                return []
-                # return [coord]
-            
-            if check_searhced and (not board[i][j] or board[i][j] == 1):
+            is_valid = 0 <= i < n and 0 <= j < n
+            if is_valid and (not board[i][j] or board[i][j] == 1):
                 out.append(coord)
         return out
-    
 
     def move(self, board):
         '''
         Moves the given agent on the board.
-
-        This version will also move the goal state,
-        since we are searching bidirectionally.
         '''
-        if self.is_goal():
-            return
-        
-        moves = self.open_moves(board)
-        self.frontier += moves
-        self.sort_frontier()
 
-        moves = self.open_moves(board, self.goal_i, self.goal_j, True)
-        self.goal_frontier += moves
-        self.sort_goal_frontier()
+        if self.is_goal() or self.no_solution:
+            return
+
+        self.frontier = self.open_moves(board)
+        self.sort_frontier()
         
-        if not self.frontier or not self.goal_frontier:
+        if not self.frontier:
+            self.no_solution = True
             return
         
         coord = self.frontier.pop(0)
-        goal_coord = self.goal_frontier.pop(0)
+
+        if coord not in self.penalties:
+            self.penalties[coord] = 1
+        else:
+            self.penalties[coord] += 1
 
         board[self.i][self.j] = 0
         self.i, self.j = coord
         board[self.i][self.j] = self
-
-        board[self.goal_i][self.goal_j] = 0
-        self.goal_i, self.goal_j = goal_coord
-        board[self.goal_i][self.goal_j] = self
-
-        self.searched.add((self.i, self.j))
-        self.goal_searched.add((self.goal_i, self.goal_j))
-
-
-    def sort_goal_frontier(self):
-        self.goal_frontier.sort(key=lambda coord: self.goal_heuristic(coord[0], coord[1]) + 1)
-
-    def goal_heuristic(self, i=None, j=None):
-        '''
-        Redefine a new heuristic that calculates distance to the
-        agent's current position.
-        '''
-        if i == None:
-            i = self.i
-        if j == None:
-            j = self.j
-            
-        return ((self.i - i) ** 2 + (self.j - j) ** 2) ** (1/2)
-
-
 
 
 if __name__ == '__main__':

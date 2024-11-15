@@ -1,3 +1,1 @@
-* Fix bidirectional search
-
-* use manhattan distance as opposed to square root to go faster?
+* Start improvement process

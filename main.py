@@ -1,5 +1,6 @@
 from board import Board
 from agents import *
+from optimized_agents import MemoryLookupLocalSearchAgent
 
 
 # Testing board
@@ -17,13 +18,17 @@ from agents import *
 
 
 def main(agent=Agent):
-    b = Board()
+    # b = Board()
+    b = Board(rows=80, cols=80, num_islands=100, min_island_size=10, max_island_size=30)
     b.generate_board()
     b.place_agents(agent)
     b.play(agent)
 
 main(BidirectionalSearchAgent)
 # main()
+# main(GuidedLocalSearchAgent)
+# main(DelayedImprovementAgent)
+main(MemoryLookupLocalSearchAgent)
 
 # b = Board()
-# b.test(10, Agent, BidirectionalSearchAgent, SimulatedAnnealingAgent)
+# print(b.test(100, AStarAgent, BidirectionalSearchAgent, SimulatedAnnealingAgent))
