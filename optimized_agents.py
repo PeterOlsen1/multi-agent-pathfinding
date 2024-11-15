@@ -11,6 +11,14 @@ class MemoryLookupLocalSearchAgent(Agent):
         return 'MemoryLookupLocalSearchAgent'
 
     def heuristic(self, i=None, j=None):
+        '''
+        This heuristic function is designed so that we only need
+        to actually calculate the heuristic for a given coordinate
+        one time.
+
+        Once actually calculated, store the value in a dictionary
+        so that we never need to do it again.
+        '''
         if i == None:
             i = self.i
         if j == None:
@@ -30,6 +38,9 @@ class MemoryLookupLocalSearchAgent(Agent):
         return self.heuristics[coord] * (penalty + 1)
     
     def open_moves(self, board):
+        '''
+        Same as open moves for local search.
+        '''
         options = [
             (self.i, self.j),
             (self.i + 1, self.j),
@@ -53,9 +64,9 @@ class MemoryLookupLocalSearchAgent(Agent):
     
     def move(self, board):
         '''
-        Moves the given agent on the board.
+        This function moves the agent. It incorporates the idea
+        of penalties from GuidedLocalSearchAgent.
         '''
-
         if self.is_goal() or self.no_solution:
             return
 
