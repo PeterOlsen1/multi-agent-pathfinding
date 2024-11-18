@@ -1,5 +1,6 @@
 * Start improvement process
-    * Bidirectional local search?
+    * Make A* that doesn't remember moves but has penalties? (still has frontier)
+    * Make the above thing but with memory lookup?
 
 * Produce shaded regions in graphs that have means
     * use the fill_between function
