@@ -167,13 +167,13 @@ if __name__ == '__main__':
     b2 = Board(rows=100, cols=100, num_islands=200, min_island_size=10, max_island_size=30)
     b3 = Board(rows=1000, cols=1000, num_islands=2000, min_island_size=10, max_island_size=30)
     # agents = [AStarAgent, BidirectionalSearchAgent, GuidedLocalSearchAgent, SteepestAscentAgent]
-    agents = [GuidedLocalSearchAgent, MemoryLookupLocalSearchAgent]
+    agents = [GuidedLocalSearchAgent, BidirectionalLocalSearchAgent]
 
-    iterations = 50
-    data = b2.test(iterations, agents)
+    iterations = 1000
+    board = b
+    data = board.test(iterations, agents)
 
-
-    averagePerformanceBarChart(agents, iterations, b2, 'average_performance.png', data)
-    performanceLinechart(agents, iterations, b2, 'performance.png', data)
-    fastestSolutionBarChart(agents, iterations, b2, 'fastest.png', data)
-    # problemsSolvedBarChart(agents, iterations, b2, 'problems_solved.png', data)
+    averagePerformanceBarChart(agents, iterations, board, 'average_performance.png', data)
+    performanceLinechart(agents, iterations, board, 'performance.png', data)
+    fastestSolutionBarChart(agents, iterations, board, 'fastest.png', data)
+    # problemsSolvedBarChart(agents, iterations, board, 'problems_solved.png', data)

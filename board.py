@@ -10,8 +10,8 @@ WHITE = (255, 255, 255)
 BLACK = (0, 0, 0)
 GREY = (100, 100, 100)
 
-width = height = 1200
-rows = cols = 80
+width = height = 800
+rows = cols = 30
 cell_width = width // cols
 cell_height = height // rows
 
