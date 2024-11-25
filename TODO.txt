@@ -1,6 +1,7 @@
 * Start improvement process
     * Make A* that doesn't remember moves but has penalties? (still has frontier)
     * Make the above thing but with memory lookup?
+    * put A* with set in the optimized agents and leave it as list in general agents, or use matrix?
 
 * Produce shaded regions in graphs that have means
     * use the fill_between function
