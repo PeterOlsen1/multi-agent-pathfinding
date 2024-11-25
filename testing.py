@@ -18,7 +18,9 @@ def performanceLinechart(agents, iterations, board, fname, data=None):
 
     for agent in bar_labels:
         plt.plot(data[agent], label=agent)
-        max_set = max(data[agent])
+        max_set = 0
+        if data[agent]:
+            max_set = max(data[agent])
         if (max_set > max_y):
             max_y = max_set
 
@@ -167,11 +169,15 @@ if __name__ == '__main__':
     b2 = Board(rows=100, cols=100, num_islands=200, min_island_size=10, max_island_size=30)
     b3 = Board(rows=1000, cols=1000, num_islands=2000, min_island_size=10, max_island_size=30)
     # agents = [AStarAgent, BidirectionalSearchAgent, GuidedLocalSearchAgent, SteepestAscentAgent]
-    agents = [GuidedLocalSearchAgent, BidirectionalLocalSearchAgent]
+    # agents = [GuidedLocalSearchAgent, BidirectionalLocalSearchAgent]
+    # agents = [AStarAgent, HeuristicAdjustmentAStarAgent]
+    # agents = [MemoryLookupLocalSearchAgent, GuidedLocalSearchAgent]
+    agents = [CachedAStarAgent, AStarAgent]
 
-    iterations = 1000
+    iterations = 100
     board = b
     data = board.test(iterations, agents)
+    print(data)
 
     averagePerformanceBarChart(agents, iterations, board, 'average_performance.png', data)
     performanceLinechart(agents, iterations, board, 'performance.png', data)

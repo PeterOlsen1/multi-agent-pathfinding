@@ -92,7 +92,7 @@ class Board():
             i, j = agent_coord
             goal_i, goal_j = goal_coord            
 
-            agent = agent_class(make_random_color(), i, j, goal_i, goal_j)
+            agent = agent_class(make_random_color(), i, j, goal_i, goal_j, self.board)
             self.agents.append(agent)
             self.board[i][j] = agent
             self.board[goal_i][goal_j] = 1
@@ -104,7 +104,7 @@ class Board():
 
         Assume that the position is valid when parameters are passed in.
         '''
-        agent = agent_class(make_random_color(), i, j, goal_i, goal_j)
+        agent = agent_class(make_random_color(), i, j, goal_i, goal_j, self.board)
         self.board[i][j] = agent
         self.board[goal_i][goal_j] = 1
         return agent

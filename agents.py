@@ -8,17 +8,18 @@ class Agent():
     open_moves() and move() are not defined,
     that is left to the child classes.
     '''
-    def __init__(self, color, i, j, goal_i, goal_j):
+    def __init__(self, color, i, j, goal_i, goal_j, board):
         self.color = color
         self.i = i
         self.j = j
         self.goal_i = goal_i
         self.goal_j = goal_j
         self.frontier = []
-        self.searched = set() # use a set here for faster lookup
+        self.searched = []
         self.start_heuristic = 0
         self.no_solution = False
         self.heuristic_calls = 0
+        self.board = board
 
     def name(self):
         '''
@@ -111,7 +112,7 @@ class AStarAgent(Agent):
         board[self.i][self.j] = 0
         self.i, self.j = coord
         board[self.i][self.j] = self
-        self.searched.add((self.i, self.j))
+        self.searched.append((self.i, self.j))
 
 
 class BidirectionalSearchAgent(Agent):
@@ -122,7 +123,7 @@ class BidirectionalSearchAgent(Agent):
     we can search towards each other instead of one direction
     at a time.
     '''    
-    def __init__(self, color, i, j, goal_i, goal_j):
+    def __init__(self, color, i, j, goal_i, goal_j, board):
         '''
         In this new init function, we define 'self.iterations',
         which will increase for every local search iteration where
@@ -131,9 +132,9 @@ class BidirectionalSearchAgent(Agent):
         The value 'self.iterations' reflects the radius of the surrouding
         spaces we will search for a move after running into a local max
         '''
-        super().__init__(color, i, j, goal_i, goal_j)
+        super().__init__(color, i, j, goal_i, goal_j, board)
         self.goal_frontier = []
-        self.goal_searched = set()
+        self.goal_searched = []
     
     def name(self):
         return 'BidirectionalSearchAgent'
@@ -216,8 +217,8 @@ class BidirectionalSearchAgent(Agent):
         self.goal_i, self.goal_j = goal_coord
         board[self.goal_i][self.goal_j] = self
 
-        self.searched.add((self.i, self.j))
-        self.goal_searched.add((self.goal_i, self.goal_j))
+        self.searched.append((self.i, self.j))
+        self.goal_searched.append((self.goal_i, self.goal_j))
 
 
     def sort_goal_frontier(self):
@@ -297,12 +298,11 @@ class SteepestAscentAgent(Agent):
         board[self.i][self.j] = 0
         self.i, self.j = coord
         board[self.i][self.j] = self
-        self.searched.add((self.i, self.j))
 
 
 
 class DelayedImprovementAgent(Agent):
-    def __init__(self, color, i, j, goal_i, goal_j):
+    def __init__(self, color, i, j, goal_i, goal_j, board):
         '''
         In this new init function, we define 'self.iterations',
         which will increase for every local search iteration where
@@ -311,7 +311,7 @@ class DelayedImprovementAgent(Agent):
         The value 'self.iterations' reflects the radius of the surrouding
         spaces we will search for a move after running into a local max
         '''
-        super().__init__(color, i, j, goal_i, goal_j)
+        super().__init__(color, i, j, goal_i, goal_j, board)
         self.iterations = 2
         self.iter_cap = 100
 
@@ -418,7 +418,7 @@ class DelayedImprovementAgent(Agent):
 
 
 class SimulatedAnnealingAgent(Agent):
-    def __init__(self, color, i, j, goal_i, goal_j):
+    def __init__(self, color, i, j, goal_i, goal_j, board):
         '''
         In this new init function, we define 'self.iterations',
         which will increase for every local search iteration where
@@ -427,7 +427,7 @@ class SimulatedAnnealingAgent(Agent):
         The value 'self.iterations' reflects the radius of the surrounding
         spaces we will search for a move after running into a local max
         '''
-        super().__init__(color, i, j, goal_i, goal_j)
+        super().__init__(color, i, j, goal_i, goal_j, board)
         self.iterations = 1
         self.temp = 1000
         self.repeats = 0
@@ -516,8 +516,8 @@ class SimulatedAnnealingAgent(Agent):
 
 
 class GuidedLocalSearchAgent(Agent):
-    def __init__(self, color, i, j, goal_i, goal_j):
-        super().__init__(color, i, j, goal_i, goal_j)
+    def __init__(self, color, i, j, goal_i, goal_j, board):
+        super().__init__(color, i, j, goal_i, goal_j, board)
         self.penalties = {}
 
     def name(self):
