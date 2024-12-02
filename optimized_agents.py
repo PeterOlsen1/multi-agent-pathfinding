@@ -95,6 +95,48 @@ class MemoryLookupLocalSearchAgent(Agent):
         self.i, self.j = coord
         board[self.i][self.j] = self
 
+
+class CachedGuidedLocalSearchAgent(GuidedLocalSearchAgent):
+    '''
+    This agnent is essentially a GuidedLocalSearch agent, but with
+    a small cache to store heuristic calculations so we can severly
+    minimize the number of times we calculate the heuristic.
+    '''
+    def name(self):
+        return "CachedGuidedLocalSearchAgent"
+    
+    @lru_cache(maxsize=256)
+    def heuristic_value(self, i, j):
+        '''
+        We can't directly cache the heuristic since we need to calculate
+        varying penalties, so let's cache the value of the heuristic,
+        and leave the penalty calculation to the 'self.heuristic' function
+        '''
+        if i == None:
+            i = self.i
+        if j == None:
+            j = self.j
+        self.heuristic_calls += 1
+        return ((self.goal_i - i) ** 2 + (self.goal_j - j) ** 2) ** (1/2)
+
+    def heuristic(self, i=None, j=None):
+        if i == None:
+            i = self.i
+        if j == None:
+            j = self.j
+
+        # grab heuristic so we only need to calculate it once
+        heuristic_val = self.heuristic_value(i, j)
+        straight_line = heuristic_val
+        penalty = self.penalties.get((i, j), 0)
+
+        # we've visited the same square 100 times. time to stop
+        if (penalty > 100):
+            self.no_solution = True
+            return -1
+        return straight_line + penalty * heuristic_val
+
+
 class CachedAStarAgent(AStarAgent):
     def __init__(self, color, i, j, goal_i, goal_j, board):
         super().__init__(color, i, j, goal_i, goal_j, board)

@@ -28,7 +28,7 @@ def main(agent=Agent):
 # main()
 # main(GuidedLocalSearchAgent)
 # main(DelayedImprovementAgent)
-main(SteepestAscentAgent)
+main(CachedGuidedLocalSearchAgent)
 
 # b = Board()
 # print(b.test(100, AStarAgent, BidirectionalSearchAgent, SimulatedAnnealingAgent))
