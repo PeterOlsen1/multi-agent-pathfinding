@@ -45,7 +45,23 @@ class Agent():
         # computing a square root is slow, make a heuristic that doesn't use it?
         return ((self.goal_i - i) ** 2 + (self.goal_j - j) ** 2) ** (1/2)
         # return max(abs(self.goal_i - i), abs(self.goal_j - j))
-        
+
+    def get_choice(self, frontier, heuristic):
+        '''
+        Helper function to get the best choice from a frontier
+
+        Returns a tuple of (index, value)
+        '''
+        best = float('inf')
+        best_idx = -1
+        for i in range(len(frontier)):
+            coord = frontier[i]
+            if heuristic(coord[0], coord[1]) < best:
+                best = heuristic(coord[0], coord[1])
+                best_idx = i
+
+        return best_idx
+    
     def open_moves(self, board):
         pass
     
@@ -54,7 +70,7 @@ class Agent():
 
     def sort_frontier(self):
         self.frontier.sort(key=lambda coord: self.heuristic(coord[0], coord[1]) + 1)
-
+    
     def __repr__(self):
         return f'Agent at position ({self.i}, {self.j}) color {self.color}'
     
@@ -102,12 +118,13 @@ class AStarAgent(Agent):
         
         moves = self.open_moves(board)
         self.frontier += moves
-        self.sort_frontier()
         
         if not self.frontier:
             self.no_solution = True
             return
-        coord = self.frontier.pop(0)
+        
+        idx = self.get_choice(self.frontier, self.heuristic)
+        coord = self.frontier.pop(idx)
 
         board[self.i][self.j] = 0
         self.i, self.j = coord
@@ -206,8 +223,11 @@ class BidirectionalSearchAgent(Agent):
             self.no_solution = True
             return
         
-        coord = self.frontier.pop(0)
-        goal_coord = self.goal_frontier.pop(0)
+        idx = self.get_choice(self.frontier, self.heuristic)
+        coord = self.frontier.pop(idx)
+
+        idx = self.get_choice(self.goal_frontier, self.goal_heuristic)
+        goal_coord = self.goal_frontier.pop(idx)
 
         board[self.i][self.j] = 0
         self.i, self.j = coord
@@ -398,7 +418,6 @@ class DelayedImprovementAgent(Agent):
             return
                 
         self.frontier = self.open_moves(board)
-        self.sort_frontier()
 
         if not self.frontier:
             self.iterations += 1
@@ -408,7 +427,8 @@ class DelayedImprovementAgent(Agent):
             if not self.frontier:
                 return
 
-        coord = self.frontier.pop(0)
+        idx = self.get_choice(self.frontier, self.heuristic)
+        coord = self.frontier.pop(idx)
 
         board[self.i][self.j] = 0
         self.i, self.j = coord
@@ -490,7 +510,7 @@ class SimulatedAnnealingAgent(Agent):
         idx_to_pop = 0
         coord = self.frontier[0]
 
-        # give a weighted choice so that the simulated annealing can lend towards more optimal move
+        # give a weighted choice so that the simulated annealing can lend itself towards more optimal move
         if n > 1:
             weighted_choice = []
             for i in range(n - 1, 0, -1):
@@ -571,13 +591,13 @@ class GuidedLocalSearchAgent(Agent):
             return
 
         self.frontier = self.open_moves(board)
-        self.sort_frontier()
         
         if not self.frontier:
             self.no_solution = True
             return
         
-        coord = self.frontier.pop(0)
+        idx = self.get_choice(self.frontier, self.heuristic)
+        coord = self.frontier.pop(idx)
 
         if coord not in self.penalties:
             self.penalties[coord] = 1

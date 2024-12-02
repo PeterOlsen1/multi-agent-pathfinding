@@ -172,12 +172,11 @@ if __name__ == '__main__':
     # agents = [GuidedLocalSearchAgent, BidirectionalLocalSearchAgent]
     # agents = [AStarAgent, HeuristicAdjustmentAStarAgent]
     # agents = [MemoryLookupLocalSearchAgent, GuidedLocalSearchAgent]
-    agents = [CachedAStarAgent, AStarAgent]
+    agents = [AStarAgent, MatrixLookupAStarAgent, SetLookupAStarAgent, CachedAStarAgent, SetLookupCachedAStarAgent]
 
     iterations = 100
     board = b
     data = board.test(iterations, agents)
-    print(data)
 
     averagePerformanceBarChart(agents, iterations, board, 'average_performance.png', data)
     performanceLinechart(agents, iterations, board, 'performance.png', data)

@@ -78,13 +78,13 @@ class MemoryLookupLocalSearchAgent(Agent):
             return
 
         self.frontier = self.open_moves(board)
-        self.sort_frontier()
         
         if not self.frontier:
             self.no_solution = True
             return
         
-        coord = self.frontier.pop(0)
+        idx = self.get_choice(self.frontier, self.heuristic)
+        coord = self.frontier.pop(idx)
 
         if coord not in self.penalties:
             self.penalties[coord] = 1
@@ -99,6 +99,9 @@ class CachedAStarAgent(AStarAgent):
     def __init__(self, color, i, j, goal_i, goal_j, board):
         super().__init__(color, i, j, goal_i, goal_j, board)
 
+    def name(self):
+        return 'CachedAStarAgent'
+
     @lru_cache(maxsize=256)
     def heuristic(self, i=None, j=None):
         '''
@@ -109,15 +112,44 @@ class CachedAStarAgent(AStarAgent):
         if j == None:
             j = self.j
         self.heuristic_calls += 1
-        # computing a square root is slow, make a heuristic that doesn't use it?
         return ((self.goal_i - i) ** 2 + (self.goal_j - j) ** 2) ** (1/2)
+    
+class SetLookupCachedAStarAgent(CachedAStarAgent):
+    def __init__(self, color, i, j, goal_i, goal_j, board):
+        super().__init__(color, i, j, goal_i, goal_j, board)
+        self.searched = set() # use a set here for faster lookup
+
+    def name(self):
+        return 'SetLookupCachedAStarAgent'
+    
+    def move(self, board):
+        '''
+        Moves the given agent on the board
+        '''
+        if self.is_goal():
+            return
+        
+        moves = self.open_moves(board)
+        self.frontier += moves
+        
+        if not self.frontier:
+            self.no_solution = True
+            return
+
+        idx = self.get_choice(self.frontier, self.heuristic)
+        coord = self.frontier.pop(idx)
+
+        board[self.i][self.j] = 0
+        self.i, self.j = coord
+        board[self.i][self.j] = self
+        self.searched.add((self.i, self.j))
 
 
 class BidirectionalLocalSearchAgent(GuidedLocalSearchAgent):
     '''
-    Perform a local search where both agents navigate to one another.
+    Perform a local search where both agents navigate to one another
 
-    Takes the ideas of bidirectional search and local search and combines them.
+    Takes the ideas of bidirectional search and local search and combines them
     '''
     def __init__(self, color, i, j, goal_i, goal_j, board):
         super().__init__(color, i, j, goal_i, goal_j, board)
@@ -175,18 +207,19 @@ class BidirectionalLocalSearchAgent(GuidedLocalSearchAgent):
         # get the open moves
         moves = self.open_moves(board)
         self.frontier = moves
-        self.sort_frontier()
 
         moves = self.open_moves(board, self.goal_i, self.goal_j)
         self.goal_frontier = moves
-        self.sort_goal_frontier()
 
         if not self.frontier or not self.goal_frontier:
             self.no_solution = True
             return
         
-        coord = self.frontier.pop(0)
-        goal_coord = self.goal_frontier.pop(0)
+        idx = self.get_choice(self.frontier, self.heuristic)
+        coord = self.frontier.pop(idx)
+
+        idx = self.get_choice(self.goal_frontier, self.goal_heuristic)
+        goal_coord = self.goal_frontier.pop(idx)
 
         # move agents
         board[self.i][self.j] = 0
@@ -258,12 +291,13 @@ class SetLookupAStarAgent(AStarAgent):
         
         moves = self.open_moves(board)
         self.frontier += moves
-        self.sort_frontier()
         
         if not self.frontier:
             self.no_solution = True
             return
-        coord = self.frontier.pop(0)
+
+        idx = self.get_choice(self.frontier, self.heuristic)
+        coord = self.frontier.pop(idx)
 
         board[self.i][self.j] = 0
         self.i, self.j = coord
@@ -297,12 +331,13 @@ class MatrixLookupAStarAgent(AStarAgent):
         
         moves = self.open_moves(board)
         self.frontier += moves
-        self.sort_frontier()
         
         if not self.frontier:
             self.no_solution = True
             return
-        coord = self.frontier.pop(0)
+        
+        idx = self.get_choice(self.frontier, self.heuristic)
+        coord = self.frontier.pop(idx)
 
         board[self.i][self.j] = 0
         self.searched[self.i][self.j] = True

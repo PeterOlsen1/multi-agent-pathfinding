@@ -48,7 +48,7 @@ class Board():
             j = random.randint(1, self.cols - 2)
             blocks = random.randint(self.min_island_size, self.max_island_size)
             board[i][j] = 2
-            choice_list =make_choice_list(i, j)
+            choice_list = make_choice_list(i, j)
             for _ in range(blocks - 1):
                 choice_i, choice_j = random.choice(choice_list)
 
