@@ -115,7 +115,9 @@ class CachedAStarAgent(AStarAgent):
 
 class BidirectionalLocalSearchAgent(GuidedLocalSearchAgent):
     '''
-    Perform a local search where both agents navigate to one another
+    Perform a local search where both agents navigate to one another.
+
+    Takes the ideas of bidirectional search and local search and combines them.
     '''
     def __init__(self, color, i, j, goal_i, goal_j, board):
         super().__init__(color, i, j, goal_i, goal_j, board)
