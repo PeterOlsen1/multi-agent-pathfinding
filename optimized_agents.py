@@ -371,32 +371,81 @@ class MatrixLookupAStarAgent(AStarAgent):
         return out
 
 
+''' 
+==================================================================================================================
+Heuristic adjustments take place down here
 
-def newHeuristic(self, i=None, j=None):
-        '''
-        Give the straightline distance between current position and goal.
+The original square root heuristic we have is slow, so we need to find optimizations (mostly to do with no square roots)
+'''
 
-        In this case, we add 1 move for every block that is found
-        on the diagonal.
-        '''
-        if i == None:
-            i = self.i
-        if j == None:
-            j = self.j
-        self.heuristic_calls += 1
-        # computing a square root is slow, make a heuristic that doesn't use it?
-        step_i = (self.goal_i - i) / 10
-        step_j = (self.goal_j - j) / 10
+def obstacleAdjustmentHeuristic(self, i=None, j=None):
+    '''
+    Give the straightline distance between current position and goal.
 
-        value = ((self.goal_i - i) ** 2 + (self.goal_j - j) ** 2) ** (1/2)
-        for step in range(10):
-            (adjust_i, adjust_j) = (int(i + step_i * step), int(j + step_j * step))
-            if (self.board[adjust_i][adjust_j] == 2):
-                value += 1
+    In this case, we add 1 move for every block that is found
+    on the diagonal.
+    '''
+    if i == None:
+        i = self.i
+    if j == None:
+        j = self.j
+    self.heuristic_calls += 1
+    # computing a square root is slow, make a heuristic that doesn't use it?
+    step_i = (self.goal_i - i) / 10
+    step_j = (self.goal_j - j) / 10
+    checked = set()
+
+    value = ((self.goal_i - i) ** 2 + (self.goal_j - j) ** 2) ** (1/2)
+    for step in range(10):
+        (adjust_i, adjust_j) = (int(i + step_i * step), int(j + step_j * step))
+
+        #don't check the same block twice (no longer admissable)
+        if (adjust_i, adjust_j) in checked:
+            continue
+        else:
+            checked.add((adjust_i, adjust_j))
+
+        if (self.board[adjust_i][adjust_j] == 2):
+            value += 1
+    return value
+
+
+def mhdHeuristic(self, i=None, j=None):
+    '''
+    Give the Manhattan distance between current position and goal.
+    '''
+    if i == None:
+        i = self.i
+    if j == None:
+        j = self.j
+    self.heuristic_calls += 1
+    value = abs(self.goal_i - i) + abs(self.goal_j - j)
+    return value
+
+class MHDAStarAgent(AStarAgent):
+    def name(self):
+        return 'MHDAStarAgent'
+    
+    def heuristic(self, i=None, j=None):
+        value = mhdHeuristic(self, i, j)
+        return value
+    
+class MHDBidirectionalLocalSearchAgent(BidirectionalLocalSearchAgent):
+    def name(self):
+        return 'MHDBidirectionalLocalSearchAgent'
+    
+    def goal_heuristic(self, i=None, j=None):
+        value = mhdHeuristic(self, self.goal_i, self.goal_j)
         return value
 
-class HeuristicAdjustmentAStarAgent(AStarAgent):
     def heuristic(self, i=None, j=None):
-        value = newHeuristic(self, i, j)
-        print(value)
+        value = mhdHeuristic(self, i, j)
+        return value
+
+class ObstacleAdjustmentAStarAgent(AStarAgent):
+    def name(self):
+        return 'ObstacleAdjustmentAStarAgent'
+    
+    def heuristic(self, i=None, j=None):
+        value = obstacleAdjustmentHeuristic(self, i, j)
         return value

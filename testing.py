@@ -170,9 +170,10 @@ if __name__ == '__main__':
     b3 = Board(rows=1000, cols=1000, num_islands=2000, min_island_size=10, max_island_size=30)
     # agents = [AStarAgent, BidirectionalSearchAgent, GuidedLocalSearchAgent, SteepestAscentAgent]
     # agents = [GuidedLocalSearchAgent, BidirectionalLocalSearchAgent]
-    # agents = [AStarAgent, HeuristicAdjustmentAStarAgent]
+    # agents = [AStarAgent, ObstacleAdjustmentAStarAgent]
     # agents = [MemoryLookupLocalSearchAgent, GuidedLocalSearchAgent]
-    agents = [AStarAgent, MatrixLookupAStarAgent, SetLookupAStarAgent, CachedAStarAgent, SetLookupCachedAStarAgent]
+    # agents = [AStarAgent, MatrixLookupAStarAgent, SetLookupAStarAgent, CachedAStarAgent, SetLookupCachedAStarAgent]
+    agents = [ObstacleAdjustmentAStarAgent, AStarAgent, MHDAStarAgent]
 
     iterations = 100
     board = b
