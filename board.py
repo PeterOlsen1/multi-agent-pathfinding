@@ -233,6 +233,3 @@ class Board():
                 out[agent.name() + '_heuristic_calls'].append(agent.heuristic_calls)
         return out
         
-if __name__ == '__main__':
-    b = Board()
-    b.play()

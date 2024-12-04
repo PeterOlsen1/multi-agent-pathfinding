@@ -586,7 +586,6 @@ class GuidedLocalSearchAgent(Agent):
         '''
         Moves the given agent on the board.
         '''
-
         if self.is_goal() or self.no_solution:
             return
 
