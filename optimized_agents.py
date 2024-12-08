@@ -10,6 +10,8 @@ import heapq
     5. OptimizedLocalSearchAgent
 '''
 
+# class OptimizedSimulatedAnnealingAgent(SimulatedAnnealingAgent):
+
 class MemoryLookupLocalSearchAgent(Agent):
     '''
     This agent is a little silly. In order to reduce the number

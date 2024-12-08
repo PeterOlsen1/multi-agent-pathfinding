@@ -28,7 +28,7 @@ def main(agent=Agent):
 # main()
 # main(GuidedLocalSearchAgent)
 # main(DelayedImprovementAgent)
-main(HeapFrontierAStarAgent)
+main(RandomLocalSearchAgent)
 
 # b = Board()
 # print(b.test(100, AStarAgent, BidirectionalSearchAgent, SimulatedAnnealingAgent))

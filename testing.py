@@ -172,10 +172,10 @@ if __name__ == '__main__':
     # agents = [GuidedLocalSearchAgent, BidirectionalLocalSearchAgent]
     # agents = [AStarAgent, ObstacleAdjustmentAStarAgent]
     # agents = [MemoryLookupLocalSearchAgent, GuidedLocalSearchAgent]
-    agents = [HeapFrontierAStarAgent, SetLookupAStarAgent]
+    agents = [RandomLocalSearchAgent, SimulatedAnnealingAgent]
     # agents = [SetLookupCachedAStarAgent, OptimizedAStarAgent]
 
-    iterations = 100
+    iterations = 10
     board = b
     data = board.test(iterations, agents)
 
