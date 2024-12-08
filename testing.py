@@ -172,7 +172,7 @@ if __name__ == '__main__':
     # agents = [GuidedLocalSearchAgent, BidirectionalLocalSearchAgent]
     # agents = [AStarAgent, ObstacleAdjustmentAStarAgent]
     # agents = [MemoryLookupLocalSearchAgent, GuidedLocalSearchAgent]
-    agents = [GuidedLocalSearchAgent, CachedGuidedLocalSearchAgent, BidirectionalLocalSearchAgent, OptimizedLocalSearchAgent]
+    agents = [HeapFrontierAStarAgent, SetLookupAStarAgent]
     # agents = [SetLookupCachedAStarAgent, OptimizedAStarAgent]
 
     iterations = 100

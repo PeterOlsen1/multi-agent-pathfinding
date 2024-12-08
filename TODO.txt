@@ -9,3 +9,5 @@
 * Produce shaded regions in graphs that have means
     * use the fill_between function
     * visualize with seaborn for better looks?
+
+* Make readme wiht instructions on how to operate

@@ -4,7 +4,6 @@ import heapq
 
 ''' ===============================================================================================================
     Local Search Agents
-    1. GuidedLocalSearchAgent
     2. MemoryLookupLocalSearchAgent
     3. CachedGuidedLocalSearchAgent
     4. BidirectionalLocalSearchAgent
@@ -273,6 +272,14 @@ class BidirectionalLocalSearchAgent(GuidedLocalSearchAgent):
         return (heuristic_val) * (penalty + 1)
     
 class OptimizedLocalSearchAgent(CachedGuidedLocalSearchAgent):
+    '''
+    Top of the line local search agent. Combines the best optimizations:
+        - A cache for storing heuristic
+        - A penalty system to avoid infinite loops
+        - A heap for finding the best next move
+        - Use of the manhattan distance heuristic
+
+    '''
     def __init__(self, color, i, j, goal_i, goal_j, board):
         super().__init__(color, i, j, goal_i, goal_j, board)
 
@@ -363,15 +370,15 @@ class OptimizedLocalSearchAgent(CachedGuidedLocalSearchAgent):
     A* Agents
     1. MatrixLookupAStarAgent
     2. SetLookupAStarAgent
-    3. CachedAStarAgent
-    4. SetLookupCachedAStarAgent
-    5. HeapFrontierAStarAgent
+    3. HeapFrontierAStarAgent
+    4. CachedAStarAgent
+    5. SetLookupCachedAStarAgent
     6. OptimizedAStarAgent
 '''
 
 class MatrixLookupAStarAgent(AStarAgent):
     '''
-    Change the data structure to a matrix
+    Change the 'searched' data structure to a matrix
     '''
     def __init__(self, color, i, j, goal_i, goal_j, board):
         super().__init__(color, i, j, goal_i, goal_j, board)
@@ -467,55 +474,6 @@ class SetLookupAStarAgent(AStarAgent):
         board[self.i][self.j] = self
         self.searched.add((self.i, self.j))
 
-    
-class CachedAStarAgent(AStarAgent):
-    def __init__(self, color, i, j, goal_i, goal_j, board):
-        super().__init__(color, i, j, goal_i, goal_j, board)
-
-    def name(self):
-        return 'CachedAStarAgent'
-
-    @lru_cache(maxsize=256)
-    def heuristic(self, i=None, j=None):
-        '''
-        Give the straightline distance between current position and goal, ignoring obstacles
-        '''
-        if i == None:
-            i = self.i
-        if j == None:
-            j = self.j
-        self.heuristic_calls += 1
-        return ((self.goal_i - i) ** 2 + (self.goal_j - j) ** 2) ** (1/2)
-    
-class SetLookupCachedAStarAgent(CachedAStarAgent):
-    def __init__(self, color, i, j, goal_i, goal_j, board):
-        super().__init__(color, i, j, goal_i, goal_j, board)
-        self.searched = set() # use a set here for faster lookup
-
-    def name(self):
-        return 'SetLookupCachedAStarAgent'
-    
-    def move(self, board):
-        '''
-        Moves the given agent on the board
-        '''
-        if self.is_goal():
-            return
-        
-        moves = self.open_moves(board)
-        self.frontier += moves
-        
-        if not self.frontier:
-            self.no_solution = True
-            return
-
-        idx = self.get_choice(self.frontier, self.heuristic)
-        coord = self.frontier.pop(idx)
-
-        board[self.i][self.j] = 0
-        self.i, self.j = coord
-        board[self.i][self.j] = self
-        self.searched.add((self.i, self.j))
 
 class HeapFrontierAStarAgent(AStarAgent):
     '''
@@ -573,6 +531,56 @@ class HeapFrontierAStarAgent(AStarAgent):
             check_searhced = modified_coord not in self.searched and modified_coord not in self.frontier
             if is_valid and check_searhced and (not board[i][j] or board[i][j] == 1):
                 heapq.heappush(self.frontier, modified_coord)
+
+    
+class CachedAStarAgent(AStarAgent):
+    def __init__(self, color, i, j, goal_i, goal_j, board):
+        super().__init__(color, i, j, goal_i, goal_j, board)
+
+    def name(self):
+        return 'CachedAStarAgent'
+
+    @lru_cache(maxsize=256)
+    def heuristic(self, i=None, j=None):
+        '''
+        Give the straightline distance between current position and goal, ignoring obstacles
+        '''
+        if i == None:
+            i = self.i
+        if j == None:
+            j = self.j
+        self.heuristic_calls += 1
+        return ((self.goal_i - i) ** 2 + (self.goal_j - j) ** 2) ** (1/2)
+    
+class SetLookupCachedAStarAgent(CachedAStarAgent):
+    def __init__(self, color, i, j, goal_i, goal_j, board):
+        super().__init__(color, i, j, goal_i, goal_j, board)
+        self.searched = set() # use a set here for faster lookup
+
+    def name(self):
+        return 'SetLookupCachedAStarAgent'
+    
+    def move(self, board):
+        '''
+        Moves the given agent on the board
+        '''
+        if self.is_goal():
+            return
+        
+        moves = self.open_moves(board)
+        self.frontier += moves
+        
+        if not self.frontier:
+            self.no_solution = True
+            return
+
+        idx = self.get_choice(self.frontier, self.heuristic)
+        coord = self.frontier.pop(idx)
+
+        board[self.i][self.j] = 0
+        self.i, self.j = coord
+        board[self.i][self.j] = self
+        self.searched.add((self.i, self.j))
 
 
 class OptimizedAStarAgent(CachedAStarAgent):
