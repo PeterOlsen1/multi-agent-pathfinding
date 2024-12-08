@@ -213,11 +213,9 @@ class BidirectionalSearchAgent(Agent):
         
         moves = self.open_moves(board)
         self.frontier += moves
-        self.sort_frontier()
 
         moves = self.open_moves(board, self.goal_i, self.goal_j, True)
         self.goal_frontier += moves
-        self.sort_goal_frontier()
         
         if not self.frontier or not self.goal_frontier:
             self.no_solution = True

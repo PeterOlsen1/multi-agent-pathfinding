@@ -1,5 +1,15 @@
 from agents import *
 from functools import lru_cache
+import heapq
+
+''' ===============================================================================================================
+    Local Search Agents
+    1. GuidedLocalSearchAgent
+    2. MemoryLookupLocalSearchAgent
+    3. CachedGuidedLocalSearchAgent
+    4. BidirectionalLocalSearchAgent
+    5. OptimizedLocalSearchAgent
+'''
 
 class MemoryLookupLocalSearchAgent(Agent):
     '''
@@ -137,56 +147,6 @@ class CachedGuidedLocalSearchAgent(GuidedLocalSearchAgent):
         return straight_line + penalty * heuristic_val
 
 
-class CachedAStarAgent(AStarAgent):
-    def __init__(self, color, i, j, goal_i, goal_j, board):
-        super().__init__(color, i, j, goal_i, goal_j, board)
-
-    def name(self):
-        return 'CachedAStarAgent'
-
-    @lru_cache(maxsize=256)
-    def heuristic(self, i=None, j=None):
-        '''
-        Give the straightline distance between current position and goal, ignoring obstacles
-        '''
-        if i == None:
-            i = self.i
-        if j == None:
-            j = self.j
-        self.heuristic_calls += 1
-        return ((self.goal_i - i) ** 2 + (self.goal_j - j) ** 2) ** (1/2)
-    
-class SetLookupCachedAStarAgent(CachedAStarAgent):
-    def __init__(self, color, i, j, goal_i, goal_j, board):
-        super().__init__(color, i, j, goal_i, goal_j, board)
-        self.searched = set() # use a set here for faster lookup
-
-    def name(self):
-        return 'SetLookupCachedAStarAgent'
-    
-    def move(self, board):
-        '''
-        Moves the given agent on the board
-        '''
-        if self.is_goal():
-            return
-        
-        moves = self.open_moves(board)
-        self.frontier += moves
-        
-        if not self.frontier:
-            self.no_solution = True
-            return
-
-        idx = self.get_choice(self.frontier, self.heuristic)
-        coord = self.frontier.pop(idx)
-
-        board[self.i][self.j] = 0
-        self.i, self.j = coord
-        board[self.i][self.j] = self
-        self.searched.add((self.i, self.j))
-
-
 class BidirectionalLocalSearchAgent(GuidedLocalSearchAgent):
     '''
     Perform a local search where both agents navigate to one another
@@ -311,41 +271,103 @@ class BidirectionalLocalSearchAgent(GuidedLocalSearchAgent):
               
         heuristic_val = ((self.i - i) ** 2 + (self.j - j) ** 2) ** (1/2)
         return (heuristic_val) * (penalty + 1)
-
-
-class SetLookupAStarAgent(AStarAgent):
-    '''
-    Change data structure to a set. O(1) lookup and doesn't require as much space as a matrix
-    '''
+    
+class OptimizedLocalSearchAgent(CachedGuidedLocalSearchAgent):
     def __init__(self, color, i, j, goal_i, goal_j, board):
         super().__init__(color, i, j, goal_i, goal_j, board)
-        self.searched = set() # use a set here for faster lookup
 
     def name(self):
-        return 'SetLookupAStarAgent'
+        return 'OptimizedLocalSearchAgent'
     
     def move(self, board):
-        '''
-        Moves the given agent on the board
-        '''
-        if self.is_goal():
+        if self.is_goal() or self.no_solution:
             return
-        
-        moves = self.open_moves(board)
-        self.frontier += moves
+
+    
+        self.frontier = self.open_moves(board)
         
         if not self.frontier:
             self.no_solution = True
             return
+        
+        modified_coord = heapq.heappop(self.frontier)
+        coord = (modified_coord[1], modified_coord[2])
 
-        idx = self.get_choice(self.frontier, self.heuristic)
-        coord = self.frontier.pop(idx)
+        if coord not in self.penalties:
+            self.penalties[coord] = 1
+        else:
+            self.penalties[coord] += 1
 
         board[self.i][self.j] = 0
         self.i, self.j = coord
         board[self.i][self.j] = self
-        self.searched.add((self.i, self.j))
 
+    def open_moves(self, board):
+        return super().open_moves(board)
+    
+    def open_moves(self, board):
+        options = [
+            (self.i, self.j),
+            (self.i + 1, self.j),
+            (self.i + 1, self.j + 1),
+            (self.i + 1, self.j - 1),
+            (self.i, self.j + 1),
+            (self.i, self.j - 1),
+            (self.i - 1, self.j + 1),
+            (self.i - 1, self.j),
+            (self.i - 1, self.j - 1),
+        ]
+
+        out = []
+        n = len(board)
+        for coord in options:
+            i, j = coord
+            is_valid = 0 <= i < n and 0 <= j < n
+            if is_valid and (not board[i][j] or board[i][j] == 1):
+                heapq.heappush(out, (self.heuristic(i, j), i, j))
+        return out
+    
+    @lru_cache(maxsize=256)
+    def heuristic_value(self, i, j):
+        '''
+        We can't directly cache the heuristic since we need to calculate
+        varying penalties, so let's cache the value of the heuristic,
+        and leave the penalty calculation to the 'self.heuristic' function
+        '''
+        if i == None:
+            i = self.i
+        if j == None:
+            j = self.j
+        self.heuristic_calls += 1
+        return mhdHeuristic(self, i, j)
+
+    def heuristic(self, i=None, j=None):
+        if i == None:
+            i = self.i
+        if j == None:
+            j = self.j
+
+        # grab heuristic so we only need to calculate it once
+        heuristic_val = self.heuristic_value(i, j)
+        straight_line = heuristic_val
+        penalty = self.penalties.get((i, j), 0)
+
+        # we've visited the same square 100 times. time to stop
+        if (penalty > 100):
+            self.no_solution = True
+            return -1
+        return straight_line + penalty * heuristic_val
+
+
+''' ===============================================================================================================
+    A* Agents
+    1. MatrixLookupAStarAgent
+    2. SetLookupAStarAgent
+    3. CachedAStarAgent
+    4. SetLookupCachedAStarAgent
+    5. HeapFrontierAStarAgent
+    6. OptimizedAStarAgent
+'''
 
 class MatrixLookupAStarAgent(AStarAgent):
     '''
@@ -411,6 +433,222 @@ class MatrixLookupAStarAgent(AStarAgent):
             if is_valid and check_searhced and (not board[i][j] or board[i][j] == 1):
                 out.append(coord)
         return out
+    
+class SetLookupAStarAgent(AStarAgent):
+    '''
+    Change data structure to a set. O(1) lookup and doesn't require as much space as a matrix
+    '''
+    def __init__(self, color, i, j, goal_i, goal_j, board):
+        super().__init__(color, i, j, goal_i, goal_j, board)
+        self.searched = set() # use a set here for faster lookup
+
+    def name(self):
+        return 'SetLookupAStarAgent'
+    
+    def move(self, board):
+        '''
+        Moves the given agent on the board
+        '''
+        if self.is_goal():
+            return
+        
+        moves = self.open_moves(board)
+        self.frontier += moves
+        
+        if not self.frontier:
+            self.no_solution = True
+            return
+
+        idx = self.get_choice(self.frontier, self.heuristic)
+        coord = self.frontier.pop(idx)
+
+        board[self.i][self.j] = 0
+        self.i, self.j = coord
+        board[self.i][self.j] = self
+        self.searched.add((self.i, self.j))
+
+    
+class CachedAStarAgent(AStarAgent):
+    def __init__(self, color, i, j, goal_i, goal_j, board):
+        super().__init__(color, i, j, goal_i, goal_j, board)
+
+    def name(self):
+        return 'CachedAStarAgent'
+
+    @lru_cache(maxsize=256)
+    def heuristic(self, i=None, j=None):
+        '''
+        Give the straightline distance between current position and goal, ignoring obstacles
+        '''
+        if i == None:
+            i = self.i
+        if j == None:
+            j = self.j
+        self.heuristic_calls += 1
+        return ((self.goal_i - i) ** 2 + (self.goal_j - j) ** 2) ** (1/2)
+    
+class SetLookupCachedAStarAgent(CachedAStarAgent):
+    def __init__(self, color, i, j, goal_i, goal_j, board):
+        super().__init__(color, i, j, goal_i, goal_j, board)
+        self.searched = set() # use a set here for faster lookup
+
+    def name(self):
+        return 'SetLookupCachedAStarAgent'
+    
+    def move(self, board):
+        '''
+        Moves the given agent on the board
+        '''
+        if self.is_goal():
+            return
+        
+        moves = self.open_moves(board)
+        self.frontier += moves
+        
+        if not self.frontier:
+            self.no_solution = True
+            return
+
+        idx = self.get_choice(self.frontier, self.heuristic)
+        coord = self.frontier.pop(idx)
+
+        board[self.i][self.j] = 0
+        self.i, self.j = coord
+        board[self.i][self.j] = self
+        self.searched.add((self.i, self.j))
+
+class HeapFrontierAStarAgent(AStarAgent):
+    '''
+    Change the data structure to a heap for finding the best next move
+    '''
+    def __init__(self, color, i, j, goal_i, goal_j, board):
+        super().__init__(color, i, j, goal_i, goal_j, board)
+        self.searched = set()
+
+    def name(self):
+        return 'HeapFrontierAStarAgent'
+    
+    def move(self, board):
+        '''
+        Moves the given agent on the board
+        '''
+        if self.is_goal():
+            return
+        
+        self.open_moves(board)
+
+        if not self.frontier:
+            self.no_solution = True
+            return
+        
+        coord = heapq.heappop(self.frontier)
+
+        board[self.i][self.j] = 0
+        _, self.i, self.j = coord
+        board[self.i][self.j] = self
+        self.searched.add(coord)
+
+    def open_moves(self, board):
+        '''
+        Automatically push all open moves to the frontier
+        '''
+        options = [
+            (self.i, self.j),
+            (self.i + 1, self.j),
+            (self.i + 1, self.j + 1),
+            (self.i + 1, self.j - 1),
+            (self.i, self.j + 1),
+            (self.i, self.j - 1),
+            (self.i - 1, self.j + 1),
+            (self.i - 1, self.j),
+            (self.i - 1, self.j - 1),
+        ]
+
+        n = len(board)
+        for coord in options:
+            i, j = coord
+            modified_coord = (self.heuristic(i, j) + 1, coord[0], coord[1])
+
+            is_valid = 0 <= i < n and 0 <= j < n
+            check_searhced = modified_coord not in self.searched and modified_coord not in self.frontier
+            if is_valid and check_searhced and (not board[i][j] or board[i][j] == 1):
+                heapq.heappush(self.frontier, modified_coord)
+
+
+class OptimizedAStarAgent(CachedAStarAgent):
+    '''
+    Take all previous optimizations and combine them into one agent
+
+    It has:
+        - A set for faster lookup
+        - A heap for finding the best next move
+        - A cache for storing heuristic
+        - Removal redundant checks in open_moves
+    '''
+    def __init__(self, color, i, j, goal_i, goal_j, board):
+        super().__init__(color, i, j, goal_i, goal_j, board)
+        self.searched = set()
+
+    def name(self):
+        return 'OptimizedAStarAgent'
+    
+    def move(self, board):
+        '''
+        Moves the given agent on the board
+        '''
+        if self.is_goal():
+            return
+        
+        self.open_moves(board)
+
+        if not self.frontier:
+            self.no_solution = True
+            return
+        
+        coord = heapq.heappop(self.frontier)
+
+        board[self.i][self.j] = 0
+        _, self.i, self.j = coord
+        board[self.i][self.j] = self
+
+    @lru_cache(maxsize=256)
+    def heuristic(self, i=None, j=None):
+        '''
+        Give the straightline distance between current position and goal, ignoring obstacles
+        '''
+        if i == None:
+            i = self.i
+        if j == None:
+            j = self.j
+        self.heuristic_calls += 1
+        return mhdHeuristic(self, i, j)
+    
+    def open_moves(self, board):
+        '''
+        Automatically push all open moves to the frontier
+        '''
+        options = [
+            (self.i, self.j),
+            (self.i + 1, self.j),
+            (self.i + 1, self.j + 1),
+            (self.i + 1, self.j - 1),
+            (self.i, self.j + 1),
+            (self.i, self.j - 1),
+            (self.i - 1, self.j + 1),
+            (self.i - 1, self.j),
+            (self.i - 1, self.j - 1),
+        ]
+
+        n = len(board)
+        for coord in options:
+            i, j = coord
+            modified_coord = (self.heuristic(i, j) + 1, coord[0], coord[1])
+
+            is_valid = 0 <= i < n and 0 <= j < n
+            check_searhced = coord not in self.searched  # remove redundant check of the frontier
+            if is_valid and check_searhced and (not board[i][j] or board[i][j] == 1):
+                heapq.heappush(self.frontier, modified_coord)
+                self.searched.add(coord)
 
 
 ''' 
