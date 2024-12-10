@@ -464,7 +464,11 @@ def mhdHeuristic(self, i=None, j=None):
     value = abs(self.goal_i - i) + abs(self.goal_j - j)
     return value
 
+
 class MHDAStarAgent(AStarAgent):
+    '''
+    A star agent that uses Manhattan Distance
+    '''
     def name(self):
         return 'MHDAStarAgent'
     
@@ -472,7 +476,11 @@ class MHDAStarAgent(AStarAgent):
         value = mhdHeuristic(self, i, j)
         return value
     
+
 class MHDBidirectionalLocalSearchAgent(BidirectionalLocalSearchAgent):
+    '''
+    Bidirectional local search agent that uses Manhattan Distance
+    '''
     def name(self):
         return 'MHDBidirectionalLocalSearchAgent'
     
@@ -484,7 +492,14 @@ class MHDBidirectionalLocalSearchAgent(BidirectionalLocalSearchAgent):
         value = mhdHeuristic(self, i, j)
         return value
 
+
 class ObstacleAdjustmentAStarAgent(AStarAgent):
+    '''
+    Heuristic that adjusts for obstacles in the way
+
+    Possibly better for finding optimized paths but not great
+    for quick pathfinding
+    '''
     def name(self):
         return 'ObstacleAdjustmentAStarAgent'
     
