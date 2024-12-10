@@ -1,5 +1,6 @@
 import random
 import math
+import heapq
 
 class Agent():
     '''
@@ -213,11 +214,9 @@ class BidirectionalSearchAgent(Agent):
         
         moves = self.open_moves(board)
         self.frontier += moves
-        self.sort_frontier()
 
         moves = self.open_moves(board, self.goal_i, self.goal_j, True)
         self.goal_frontier += moves
-        self.sort_goal_frontier()
         
         if not self.frontier or not self.goal_frontier:
             self.no_solution = True
@@ -480,7 +479,7 @@ class SimulatedAnnealingAgent(Agent):
             i, j = coord
             is_valid = 0 <= i < n and 0 <= j < n
             if is_valid and (not board[i][j] or board[i][j] == 1):
-                out.append(coord)
+                heapq.heappush(out, (self.heuristic(i, j), coord))
         return out
     
 
@@ -498,7 +497,7 @@ class SimulatedAnnealingAgent(Agent):
             self.no_solution = True
             return
         
-        # we've hit a high level of iterations but no solution.
+        # we've hit a high level of iterations but no solution, we are likely stuck
         # reset to bring back randomness
         if self.iterations > 1000:
             self.repeats += 1
@@ -517,16 +516,19 @@ class SimulatedAnnealingAgent(Agent):
                 for j in range(i):
                     weighted_choice.append(n - i)
 
-            next_idx = random.choice(weighted_choice)
-            next = self.frontier[next_idx]
-            
+            # next_idx = random.choice(weighted_choice)
+            # next = self.frontier[next_idx]
+
+            next = random.choice(self.frontier)
+            next_idx = self.frontier.index(next)
+
             delta = self.heuristic(coord[0], coord[1]) - self.heuristic(next[0], next[1])
 
             if delta > 0:
                 idx_to_pop = next_idx
                 coord = next
             elif random.random() < math.exp(delta / T):
-                idx_to_pop
+                idx_to_pop = next_idx
                 coord = next
         self.iterations += 1
         board[self.i][self.j] = 0
@@ -607,6 +609,56 @@ class GuidedLocalSearchAgent(Agent):
         self.i, self.j = coord
         board[self.i][self.j] = self
 
+
+class RandomLocalSearchAgent(Agent):
+    def __init__(self, color, i, j, goal_i, goal_j, board):
+        super().__init__(color, i, j, goal_i, goal_j, board)
+        self.moves = 0
+
+    def name(self):
+        return 'RandomLocalSearchAgent'
+    
+    def open_moves(self, board):
+        options = [
+            (self.i, self.j),
+            (self.i + 1, self.j),
+            (self.i + 1, self.j + 1),
+            (self.i + 1, self.j - 1),
+            (self.i, self.j + 1),
+            (self.i, self.j - 1),
+            (self.i - 1, self.j + 1),
+            (self.i - 1, self.j),
+            (self.i - 1, self.j - 1),
+        ]
+
+        out = []
+        n = len(board)
+        for coord in options:
+            i, j = coord
+            is_valid = 0 <= i < n and 0 <= j < n
+            if is_valid and (not board[i][j] or board[i][j] == 1):
+                out.append(coord)
+        return out
+
+    def move(self, board):
+        '''
+        Moves the given agent on the board.
+        '''
+        if self.is_goal() or self.no_solution or self.moves > 1000000:
+            return
+
+        self.moves += 1
+        self.frontier = self.open_moves(board)
+        
+        if not self.frontier:
+            self.no_solution = True
+            return
+        
+        coord = random.choice(self.frontier)
+
+        board[self.i][self.j] = 0
+        self.i, self.j = coord
+        board[self.i][self.j] = self
 
 if __name__ == '__main__':
     test = Agent((200, 200, 200), 0, 0, 10, 10)
