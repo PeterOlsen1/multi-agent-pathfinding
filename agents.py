@@ -490,8 +490,8 @@ class SimulatedAnnealingAgent(Agent):
         if self.is_goal():
             return
         
+        #frontier is already sorted because we used a heap
         self.frontier = self.open_moves(board)
-        self.sort_frontier()
         
         if not self.frontier or self.repeats > 10:
             self.no_solution = True
@@ -516,13 +516,10 @@ class SimulatedAnnealingAgent(Agent):
                 for j in range(i):
                     weighted_choice.append(n - i)
 
-            # next_idx = random.choice(weighted_choice)
-            # next = self.frontier[next_idx]
-
             next = random.choice(self.frontier)
             next_idx = self.frontier.index(next)
 
-            delta = self.heuristic(coord[0], coord[1]) - self.heuristic(next[0], next[1])
+            delta = self.heuristic(coord[1][0], coord[1][0]) - self.heuristic(next[1][0], next[1][0])
 
             if delta > 0:
                 idx_to_pop = next_idx
@@ -532,7 +529,7 @@ class SimulatedAnnealingAgent(Agent):
                 coord = next
         self.iterations += 1
         board[self.i][self.j] = 0
-        self.i, self.j = coord
+        self.i, self.j = coord[1]
         board[self.i][self.j] = self
         self.frontier.pop(idx_to_pop)
 

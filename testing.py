@@ -26,7 +26,7 @@ def performanceLinechart(agents, iterations, board, fname, data=None):
 
     plt.ylim(0, max_y + (max_y * 0.1))
     plt.xlabel('Iteration')
-    plt.ylabel('Time to Solution (s)')
+    plt.ylabel('Time to Solution (ms)')
     plt.suptitle(f'Iterations: {iterations}, Board Size: {board.rows}x{board.cols}, Number of Islands: {board.num_islands}, Island Size: [{board.min_island_size} - {board.max_island_size}]', fontsize=11)
     plt.title('Agent Performance Over Time')
     plt.legend()
@@ -61,7 +61,7 @@ def averagePerformanceBarChart(agents, iterations, board, fname, data=None):
     plt.bar(averages.keys(), averages.values())
     plt.xlabel('Agents')
     plt.suptitle(f'Iterations: {iterations}, Board Size: {board.rows}x{board.cols}, Number of Islands: {board.num_islands}, Island Size: [{board.min_island_size} - {board.max_island_size}]', fontsize=11)
-    plt.ylabel('Average Performance (s)')
+    plt.ylabel('Average Performance (ms)')
     plt.title(f'Average Performance of Agents')
     plt.savefig(f'./test_results/averages/{fname}')
 
@@ -167,19 +167,25 @@ def problemsSolvedBarChart(agents, iterations, board, fname, data=None):
 if __name__ == '__main__':
     b = Board()
     b2 = Board(rows=100, cols=100, num_islands=200, min_island_size=10, max_island_size=30)
-    b3 = Board(rows=1000, cols=1000, num_islands=2000, min_island_size=10, max_island_size=30)
+    b3 = Board(rows=1000, cols=1000, num_islands=1000, min_island_size=2, max_island_size=30)
     # agents = [AStarAgent, BidirectionalSearchAgent, GuidedLocalSearchAgent, SteepestAscentAgent]
     # agents = [GuidedLocalSearchAgent, BidirectionalLocalSearchAgent]
     # agents = [AStarAgent, ObstacleAdjustmentAStarAgent]
     # agents = [MemoryLookupLocalSearchAgent, GuidedLocalSearchAgent]
-    agents = [RandomLocalSearchAgent, SimulatedAnnealingAgent]
+    # agents = [RandomLocalSearchAgent, SimulatedAnnealingAgent]
     # agents = [SetLookupCachedAStarAgent, OptimizedAStarAgent]
 
-    iterations = 10
-    board = b
+    # list of local search agents
+    # agents = [GuidedLocalSearchAgent, BidirectionalLocalSearchAgent, CachedGuidedLocalSearchAgent, OptimizedLocalSearchAgent]
+
+    # list of a* agents
+    agents = [AStarAgent, MatrixLookupAStarAgent, SetLookupAStarAgent, CachedAStarAgent, OptimizedAStarAgent]
+
+    iterations = 1000
+    board = b3
     data = board.test(iterations, agents)
 
-    averagePerformanceBarChart(agents, iterations, board, 'average_performance.png', data)
-    performanceLinechart(agents, iterations, board, 'performance.png', data)
-    fastestSolutionBarChart(agents, iterations, board, 'fastest.png', data)
+    averagePerformanceBarChart(agents, iterations, board, 'average_performance_a_star_searches_large.png', data)
+    performanceLinechart(agents, iterations, board, 'performance_a_star_searches_large.png', data)
+    fastestSolutionBarChart(agents, iterations, board, 'fastest_a_star_searches_large.png', data)
     # problemsSolvedBarChart(agents, iterations, board, 'problems_solved.png', data)

@@ -206,6 +206,7 @@ class Board():
             out[agent.__name__ + '_heuristic_calls'] = []
         
         for i in range(iterations):
+            print(f'Iteration: {i}')
             self.generate_board()
             [coord, goal_coord] = self.get_open_coords()
             i, j = coord
@@ -226,7 +227,7 @@ class Board():
                 if agent.no_solution:
                     out[agent.name()].append(-1)
                 else:
-                    delta = (end - start) / 1000000000
+                    delta = (end - start) / 1000000
                     out[agent.name()].append(delta)
                     # print(f'finished in {delta} seconds!')
 
