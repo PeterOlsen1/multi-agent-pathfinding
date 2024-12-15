@@ -164,6 +164,46 @@ def problemsSolvedBarChart(agents, iterations, board, fname, data=None):
     plt.savefig(f'./test_results/problems_solved/{fname}')
 
 
+def testIncreasingBoardSize(agents, fname):
+    '''
+    Run a set of tests with 10 increasing board sizes.
+
+    Test from 10x10 to 1000x1000
+    '''
+    out = {}
+    for i in range(10):
+        board = Board(rows=10*(i+1), cols=10*(i+1), num_islands=10*(i+1), min_island_size=2, max_island_size=10)
+        data = board.test(100, agents)
+        for agent in agents:
+            total = 0
+            items = 0
+            for item in data[agent.__name__]:
+                if item > 0:
+                    total += item
+                    items += 1
+            average = 0
+            if items > 0:
+                average = total / items
+            if agent.__name__ in out:
+                out[agent.__name__].append(average)
+            else:
+                out[agent.__name__] = [average]
+
+    plt.figure(figsize=(12, 6))
+
+    for agent in agents:
+        plt.plot(data[agent.__name__], label=agent.__name__)
+
+    plt.xlabel('Agents')
+    plt.suptitle(f'Iterations: {iterations}, Board Size: {board.rows}x{board.cols}, Number of Islands: {board.num_islands}, Island Size: [{board.min_island_size} - {board.max_island_size}]', fontsize=11)
+    plt.ylabel('# of Problems Solved')
+    plt.title(f'# of Problems Solved')
+    plt.savefig(f'./test_results/{fname}')    
+
+        
+
+
+
 if __name__ == '__main__':
     b = Board()
     b2 = Board(rows=100, cols=100, num_islands=200, min_island_size=10, max_island_size=30)
@@ -183,9 +223,10 @@ if __name__ == '__main__':
 
     iterations = 1000
     board = b3
-    data = board.test(iterations, agents)
+    # data = board.test(iterations, agents)
 
-    averagePerformanceBarChart(agents, iterations, board, 'average_performance_a_star_searches_large.png', data)
-    performanceLinechart(agents, iterations, board, 'performance_a_star_searches_large.png', data)
-    fastestSolutionBarChart(agents, iterations, board, 'fastest_a_star_searches_large.png', data)
+    # averagePerformanceBarChart(agents, iterations, board, 'average_performance_a_star_searches_large.png', data)
+    # performanceLinechart(agents, iterations, board, 'performance_a_star_searches_large.png', data)
+    # fastestSolutionBarChart(agents, iterations, board, 'fastest_a_star_searches_large.png', data)
+    testIncreasingBoardSize(agents, 'bruh.png')
     # problemsSolvedBarChart(agents, iterations, board, 'problems_solved.png', data)
