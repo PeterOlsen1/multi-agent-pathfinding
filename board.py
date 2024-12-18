@@ -10,15 +10,22 @@ WHITE = (255, 255, 255)
 BLACK = (0, 0, 0)
 GREY = (100, 100, 100)
 
-width = height = 800
+width = height = 600
 rows = cols = 30
 cell_width = width // cols
 cell_height = height // rows
 
 def make_random_color():
+    '''
+    Return a tuple of a random color
+    '''
     return (random.randint(0, 255), random.randint(0, 255), random.randint(0, 255))
 
 class Board():
+    '''
+    This class holds all of the necessary methods for creating a board,
+    placing agents, displaying a game, and running tests.
+    '''
     def __init__(self, num_islands=20, min_island_size=3, max_island_size=20, display=False, num_agents=1, rows=30, cols=30):
         self.num_islands = num_islands
         self.min_island_size = min_island_size
@@ -79,6 +86,7 @@ class Board():
 
         return [(i, j), (goal_i, goal_j)]
     
+    
     def place_agents(self, agent_class=AStarAgent):
         '''
         Create {num_agents} agents and place them on the given board
@@ -120,6 +128,7 @@ class Board():
             for j in range(self.cols):
                 if self.board[i][j] != 2:
                     self.board[i][j] = 0
+
 
     def draw_board(self, screen):
         '''
@@ -188,12 +197,13 @@ class Board():
             for agent in self.agents:
                 agent.move(self.board)
 
-            # time.sleep(0.1)
+            time.sleep(0.1)
 
 
             screen.fill(WHITE)
             self.draw_board(screen)
         
+
     def test(self, iterations=10, agent_classes=[]):
         '''
         Method for testing different agent classes against each other.

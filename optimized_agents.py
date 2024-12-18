@@ -10,7 +10,6 @@ import heapq
     5. OptimizedLocalSearchAgent
 '''
 
-# class OptimizedSimulatedAnnealingAgent(SimulatedAnnealingAgent):
 
 class MemoryLookupLocalSearchAgent(Agent):
     '''
@@ -109,7 +108,7 @@ class MemoryLookupLocalSearchAgent(Agent):
 
 class CachedGuidedLocalSearchAgent(GuidedLocalSearchAgent):
     '''
-    This agnent is essentially a GuidedLocalSearch agent, but with
+    This agent is essentially a GuidedLocalSearch agent, but with
     a small cache to store heuristic calculations so we can severly
     minimize the number of times we calculate the heuristic.
     '''
@@ -279,7 +278,6 @@ class OptimizedLocalSearchAgent(CachedGuidedLocalSearchAgent):
         - A cache for storing heuristic
         - A penalty system to avoid infinite loops
         - A heap for finding the best next move
-        - Use of the manhattan distance heuristic
 
     '''
     def __init__(self, color, i, j, goal_i, goal_j, board):
@@ -348,7 +346,7 @@ class OptimizedLocalSearchAgent(CachedGuidedLocalSearchAgent):
         if j == None:
             j = self.j
         self.heuristic_calls += 1
-        return mhdHeuristic(self, i, j)
+        return ((self.i - i) ** 2 + (self.j - j) ** 2) ** (1/2)
 
     def heuristic(self, i=None, j=None):
         if i == None:
@@ -536,6 +534,9 @@ class HeapFrontierAStarAgent(AStarAgent):
 
     
 class CachedAStarAgent(AStarAgent):
+    '''
+    A Star agent that uses a cache to store heuristic values
+    '''
     def __init__(self, color, i, j, goal_i, goal_j, board):
         super().__init__(color, i, j, goal_i, goal_j, board)
 
@@ -631,7 +632,7 @@ class OptimizedAStarAgent(CachedAStarAgent):
         if j == None:
             j = self.j
         self.heuristic_calls += 1
-        return mhdHeuristic(self, i, j)
+        return ((self.goal_i - i) ** 2 + (self.goal_j - j) ** 2) ** (1/2)
     
     def open_moves(self, board):
         '''
@@ -661,11 +662,15 @@ class OptimizedAStarAgent(CachedAStarAgent):
                 self.searched.add(coord)
 
 
+
+
 ''' 
 ==================================================================================================================
 Heuristic adjustments take place down here
 
 The original square root heuristic we have is slow, so we need to find optimizations (mostly to do with no square roots)
+
+These weren't studied in the paper since it would result in too many agents to compare.
 '''
 
 def obstacleAdjustmentHeuristic(self, i=None, j=None):

@@ -107,6 +107,7 @@ class AStarAgent(Agent):
             check_searhced = coord not in self.searched and coord not in self.frontier
             if is_valid and check_searhced and (not board[i][j] or board[i][j] == 1):
                 out.append(coord)
+                # heapq.heappush(self.frontier, (self.heuristic(i, j), coord))
         return out
     
 
@@ -439,12 +440,12 @@ class DelayedImprovementAgent(Agent):
 class SimulatedAnnealingAgent(Agent):
     def __init__(self, color, i, j, goal_i, goal_j, board):
         '''
-        In this new init function, we define 'self.iterations',
-        which will increase for every local search iteration where
-        we run into a local max.
+        This agnet uses an element of randomness to find a solution.
 
-        The value 'self.iterations' reflects the radius of the surrounding
-        spaces we will search for a move after running into a local max
+        We start at a given temperature, and iterate while the temperature decreases.
+        If the temperature is too low and no solution has been found, increase the
+        temperature and try again. If no solution is found after a given number of repeats,
+        it is deemed that there is no solution.
         '''
         super().__init__(color, i, j, goal_i, goal_j, board)
         self.iterations = 1
@@ -457,9 +458,6 @@ class SimulatedAnnealingAgent(Agent):
     def open_moves(self, board):
         '''
         Returns a list of open moves for the given board.
-
-        Duplicate the method here so that we don't check 'self.searched',
-        so that this can still be local search
         '''
         options = [
             (self.i, self.j),
@@ -608,6 +606,9 @@ class GuidedLocalSearchAgent(Agent):
 
 
 class RandomLocalSearchAgent(Agent):
+    '''
+    This agnet is just a benchmark to make sure other agents are working correctly.     
+    '''
     def __init__(self, color, i, j, goal_i, goal_j, board):
         super().__init__(color, i, j, goal_i, goal_j, board)
         self.moves = 0
@@ -656,7 +657,3 @@ class RandomLocalSearchAgent(Agent):
         board[self.i][self.j] = 0
         self.i, self.j = coord
         board[self.i][self.j] = self
-
-if __name__ == '__main__':
-    test = Agent((200, 200, 200), 0, 0, 10, 10)
-    print(test.heuristic())
